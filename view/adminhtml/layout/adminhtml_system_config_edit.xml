@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <body>
+        <referenceContainer name="js">
+            <block template="Swisspost_YellowCube::yellowcube/system/config/js.phtml" class="Magento\Framework\View\Element\Template" name="yellowcube.system.config.js"/>
+        </referenceContainer>
+    </body>
+</page>

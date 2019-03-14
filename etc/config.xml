@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <carriers>
+            <yellowcube>
+                <active>0</active>
+                <model>swisspost_yellowcube/shipping_carrier_rate</model>
+                <title>SwissPost YellowCube</title>
+                <tara_factor>0.95</tara_factor>
+                <operation_mode>T</operation_mode>
+            </yellowcube>
+        </carriers>
+        <system>
+            <messages>
+                <notification_email_template>system_admin_notification_email_template</notification_email_template>
+            </messages>
+        </system>
+    </default>
+</config>

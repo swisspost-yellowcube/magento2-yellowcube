@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="catalog_product_load_after">
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\disableLotFields"/>
+    </event>
+    <event name="catalog_product_attribute_update_before">
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleAttributeProductSave"/>
+    </event>
+    <event name="catalog_product_attribute_update_after">
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleAttributeProductSaveAfter"/>
+    </event>
+    <event name="catalog_product_save_before">
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleBeforeProductSave"/>
+    </event>
+    <event name="catalog_product_save_after">
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleProductSave"/>
+    </event>
+    <event name="catalog_product_delete_before">
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleProductDelete"/>
+    </event>
+    <event name="sales_order_shipment_save_before">
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleShipmentSaveBefore"/>
+    </event>
+    <event name="catalog_model_product_duplicate">
+        <observer name="catalog_product_duplicate_yellowcube" instance="Swisspost\YellowCube\Observer\handleProductDuplicate"/>
+    </event>
+    <event name="resource_get_tablename">
+        <observer name="swisspost_yellowcube_autoloader" instance="Swisspost\YellowCube\Observer\addAutoloader"/>
+    </event>
+    <event name="add_spl_autoloader">
+        <observer name="swisspost_yellowcube_spl_autoloader" instance="Swisspost\YellowCube\Observer\addAutoloader"/>
+    </event>
+</config>

@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <section id="carriers">
+        <group id="yellowcube" type="text" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1" translate="label" module="swisspost_yellowcube">
+            <label>SwissPost YellowCube</label>
+            <field id="active" translate="label">
+                <label>Enabled for Checkout</label>
+                <source_model>adminhtml/system_config_source_yesno</source_model>
+            </field>
+            <field id="soap_url" translate="label comment">
+                <label>URL to the Endpoint</label>
+                <comment>YellowCube SOAP EntryPoint</comment>
+            </field>
+            <field id="sender_id" translate="label">
+                <label>Sender ID</label>
+            </field>
+            <field id="depositor_number" translate="label">
+                <label>Depositor Number</label>
+            </field>
+            <field id="partner_number" translate="label">
+                <label>Partner Number</label>
+            </field>
+            <field id="plant_id" translate="label">
+                <label>Plant-ID</label>
+            </field>
+            <field id="certificate_path" translate="label comment">
+                <label>Certificate Path and Filename</label>
+                <comment>For security reasons, the certificate should be placed outside of the webroot.</comment>
+                <backend_model>swisspost_yellowcube/shipping_carrier_source_certificate_path_backend</backend_model>
+            </field>
+            <field id="certificate_password" translate="label">
+                <label>Certificate Password</label>
+                <backend_model>adminhtml/system_config_backend_encrypted</backend_model>
+            </field>
+            <field id="allowed_methods" translate="label">
+                <label>Shipping Method</label>
+                <frontend_model>swisspost_yellowcube/adminhtml_form_field_methods</frontend_model>
+                <backend_model>swisspost_yellowcube/system_config_backend_methods</backend_model>
+                <can_be_empty>1</can_be_empty>
+            </field>
+            <field id="tara_factor" translate="label">
+                <label>Tara Factor</label>
+                <validate>validate-number validate-greater-than-zero</validate>
+            </field>
+            <field id="operation_mode" translate="label comment">
+                <label>Operation Mode</label>
+                <source_model>swisspost_yellowcube/shipping_carrier_source_operation</source_model>
+                <comment>In 'Production' mode the certificate is required.</comment>
+            </field>
+            <field id="title" translate="label">
+                <label>Title</label>
+            </field>
+            <field id="sallowspecific" translate="label">
+                <label>Ship to Applicable Countries</label>
+                <frontend_class>shipping-applicable-country</frontend_class>
+                <source_model>adminhtml/system_config_source_shipping_allspecificcountries</source_model>
+            </field>
+            <field id="specificcountry" translate="label">
+                <label>Ship to Specific Countries</label>
+                <source_model>adminhtml/system_config_source_country</source_model>
+                <can_be_empty>1</can_be_empty>
+            </field>
+            <field id="debug" translate="label">
+                <label>Debug</label>
+                <source_model>adminhtml/system_config_source_yesno</source_model>
+            </field>
+            <field id="yc_upload_data" translate="button_label comment">
+                <label/>
+                <comment>Send all product master data to YellowCube; only applies to products with the attribute "Sync with YellowCube" = Yes.</comment>
+                <button_label>Send All Product Data to YellowCube</button_label>
+                <frontend_model>swisspost_yellowcube/adminhtml_system_config_upload</frontend_model>
+            </field>
+            <field id="yc_download_data" translate="button_label comment">
+                <label/>
+                <button_label>Get Current Stock Data from YellowCube</button_label>
+                <frontend_model>swisspost_yellowcube/adminhtml_system_config_download</frontend_model>
+            </field>
+        </group>
+    </section>
+</config>
