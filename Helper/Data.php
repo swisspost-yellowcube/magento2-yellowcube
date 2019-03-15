@@ -2,35 +2,47 @@
 
 namespace Swisspost\YellowCube\Helper;
 
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class Swisspost_YellowCube_Helper_Data
  */
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const CONFIG_SENDER_ID = 'carriers/yellowcube/sender_id';
-    const CONFIG_ENDPOINT = 'carriers/yellowcube/soap_url';
-    const CONFIG_PARTNER_NUMBER = 'carriers/yellowcube/partner_number';
-    const CONFIG_DEPOSITOR_NUMBER = 'carriers/yellowcube/depositor_number';
-    const CONFIG_PLANT_ID = 'carriers/yellowcube/plant_id';
-    const CONFIG_CERT_PATH = 'carriers/yellowcube/certificate_path';
-    const CONFIG_CERT_PASSWORD = 'carriers/yellowcube/certificate_password';
-    const CONFIG_TARA_FACTOR = 'carriers/yellowcube/tara_factor';
-    const CONFIG_OPERATION_MODE = 'carriers/yellowcube/operation_mode';
-    const CONFIG_DEBUG = 'carriers/yellowcube/debug';
-    const CONFIG_SHIPPING_ADDITIONAL = 'carriers/yellowcube/additional_methods';
+    const CONFIG_SENDER_ID = 'yellowcube/sender_id';
+    const CONFIG_ENDPOINT = 'yellowcube/soap_url';
+    const CONFIG_PARTNER_NUMBER = 'yellowcube/partner_number';
+    const CONFIG_DEPOSITOR_NUMBER = 'yellowcube/depositor_number';
+    const CONFIG_PLANT_ID = 'yellowcube/plant_id';
+    const CONFIG_CERT_PATH = 'yellowcube/certificate_path';
+    const CONFIG_CERT_PASSWORD = 'yellowcube/certificate_password';
+    const CONFIG_TARA_FACTOR = 'yellowcube/tara_factor';
+    const CONFIG_OPERATION_MODE = 'yellowcube/operation_mode';
+    const CONFIG_DEBUG = 'yellowcube/debug';
+    const CONFIG_SHIPPING_ADDITIONAL = 'yellowcube/additional_methods';
 
     const YC_LOG_FILE = 'yellowcube.log';
 
     const PARTNER_TYPE = 'WE';
-    public function __construct(
-        \Magento\Framework\App\Helper\Context $context
-    ) {
-        parent::__construct(
-            $context
-        );
-    }
 
+    /**
+     * @var \Magento\Framework\Encryption\EncryptorInterface
+     */
+    protected $encrypter;
+
+    /**
+     * Data constructor.
+     *
+     * @param Context $context
+     * @param EncryptorInterface $encryptor
+     */
+    public function __construct(Context $context, EncryptorInterface $encryptor)
+    {
+        parent::__construct($context);
+        $this->encrypter = $encryptor;
+    }
 
     /**
      * Get Sender Id
@@ -40,11 +52,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getSenderId($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        $senderId = (string)$this->getDefaultConfig(self::CONFIG_SENDER_ID, $storeId);
+        $senderId = (string)$this->getConfigValue(self::CONFIG_SENDER_ID, $storeId);
         if ($storeId != \Magento\Store\Model\Store::ADMIN_CODE && $senderId) {
             return $senderId;
         } else {
-            return (string)$this->getDefaultConfig(self::CONFIG_SENDER_ID);
+            return (string)$this->getConfigValue(self::CONFIG_SENDER_ID);
         }
     }
 
@@ -56,7 +68,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getEndpoint($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (string)$this->getDefaultConfig(self::CONFIG_ENDPOINT, $storeId);
+        return (string)$this->getConfigValue(self::CONFIG_ENDPOINT, $storeId);
     }
 
     /**
@@ -68,7 +80,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getPartnerNumber($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (string)$this->getDefaultConfig(self::CONFIG_PARTNER_NUMBER, $storeId);
+        return (string)$this->getConfigValue(self::CONFIG_PARTNER_NUMBER, $storeId);
     }
 
     /**
@@ -79,7 +91,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getDepositorNumber($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (string)$this->getDefaultConfig(self::CONFIG_DEPOSITOR_NUMBER, $storeId);
+        return (string)$this->getConfigValue(self::CONFIG_DEPOSITOR_NUMBER, $storeId);
     }
 
     /**
@@ -90,7 +102,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getPlantId($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (string)$this->getDefaultConfig(self::CONFIG_PLANT_ID, $storeId);
+        return (string)$this->getConfigValue(self::CONFIG_PLANT_ID, $storeId);
     }
 
     /**
@@ -101,7 +113,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCertificatePath($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (string)$this->getDefaultConfig(self::CONFIG_CERT_PATH, $storeId);
+        return (string)$this->getConfigValue(self::CONFIG_CERT_PATH, $storeId);
     }
 
     /**
@@ -112,7 +124,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getCertificatePassword($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return Mage::helper('core')->decrypt((string)$this->getDefaultConfig(self::CONFIG_CERT_PASSWORD, $storeId));
+        return $this->encrypter->decrypt((string)$this->getConfigValue(self::CONFIG_CERT_PASSWORD, $storeId));
     }
 
     /**
@@ -123,7 +135,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getTaraFactor($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (float)$this->getDefaultConfig(self::CONFIG_TARA_FACTOR, $storeId);
+        return (float)$this->getConfigValue(self::CONFIG_TARA_FACTOR, $storeId);
     }
 
     /**
@@ -134,7 +146,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getOperationMode($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (string)$this->getDefaultConfig(self::CONFIG_OPERATION_MODE, $storeId);
+        return (string)$this->getConfigValue(self::CONFIG_OPERATION_MODE, $storeId);
     }
 
     /**
@@ -145,23 +157,19 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getDebug($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (bool)$this->getDefaultConfig(self::CONFIG_DEBUG, $storeId, true);
+        return (bool)$this->getConfigValue(self::CONFIG_DEBUG, $storeId, true);
     }
 
     /**
-     * @param $path
+     * @param $field
      * @param null $storeId
      * @return mixed
      */
-    public function getDefaultConfig($path, $storeId = null, $flag = false)
+    public function getConfigValue($field, $storeId = null)
     {
-        $method = ($flag) ? 'getStoreConfigFlag' : 'getStoreConfig';
-        $value = Mage::$method($path, $storeId);
-        if ($storeId != \Magento\Store\Model\Store::ADMIN_CODE && !is_null($storeId) && !is_null($value)) {
-            return $value;
-        } else {
-            return Mage::$method($path);
-        }
+        return $this->scopeConfig->getValue(
+            $field, ScopeInterface::SCOPE_STORE, $storeId
+        );
     }
 
     /**
@@ -177,12 +185,24 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $certificatePassword = $this->getCertificatePassword($storeId);
 
         if (empty($senderId) || empty($endpoint) || empty($operationMode)
-            || (in_array($this->getOperationMode($storeId), array('P')) && empty($certificatePath) && empty($certificatePassword))
+            || (in_array($this->getOperationMode($storeId),
+                    array('P')) && empty($certificatePath) && empty($certificatePassword))
         ) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Returns allowed methods.
+     *
+     * @return array
+     *   The allowed shipping methods.
+     */
+    public function getMethods()
+    {
+        return (array) $this->scopeConfig->getValue('yellowcube/methods');
     }
 
     /**
@@ -193,7 +213,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getRealCode($shippingCode)
     {
-        foreach (Mage::getConfig()->getNode('global/carriers/yellowcube/methods')->asArray() as $method) {
+        foreach ($this->getMethods() as $method) {
             if ($method['code'] == $shippingCode) {
                 if (isset($method['real_code'])) {
                     return $method['real_code'];
@@ -212,7 +232,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getAdditionalShipping($shippingCode)
     {
-        foreach (Mage::getConfig()->getNode('global/carriers/yellowcube/methods')->asArray() as $method) {
+        foreach ($this->getMethods() as $method) {
             if ($method['code'] == $shippingCode) {
                 if (isset($method['additional'])) {
                     return $method['additional'];

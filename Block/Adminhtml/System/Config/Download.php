@@ -58,7 +58,7 @@ class Download
     {
         $originalData = $element->getOriginalData();
         $this->addData(array(
-            'button_label' => Mage::helper('swisspost_yellowcube')->__($originalData['button_label']),
+            'button_label' => __($originalData['button_label']),
             'html_id' => $element->getHtmlId(),
             'ajax_url' => $this->backendUrlInterface->getUrl('*/yellowcube_system_config_sync/download')
         ));

@@ -10,6 +10,9 @@
 
 namespace Swisspost\YellowCube\Block\Adminhtml\Form\Field;
 
+use Magento\Backend\Block\Template\Context;
+use Swisspost\YellowCube\Helper\Data;
+
 /**
  * Class Swisspost_YellowCube_Block_Adminhtml_Form_Field_Methods
  */
@@ -20,15 +23,22 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
      */
     protected $_methodRenderer;
 
+    /**
+     * @var \Swisspost\YellowCube\Helper\Data
+     */
+    protected $dataHelper;
 
-    public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        array $data = []
-    ) {
-        parent::__construct(
-            $context,
-            $data
-        );
+    /**
+     * Codes constructor.
+     *
+     * @param Context $context
+     * @param Data $dataHelper
+     * @param array $data
+     */
+    public function __construct(Context $context, Data $dataHelper, array $data = [])
+    {
+        parent::__construct($context, $data);
+        $this->dataHelper = $dataHelper;
     }
 
 
@@ -41,7 +51,7 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
     {
         if (!$this->_methodRenderer) {
             $this->_methodRenderer = $this->getLayout()->createBlock(
-                'swisspost_yellowcube/adminhtml_form_field_codes', '',
+                Codes::class, '',
                 array('is_render_to_js_template' => true)
             );
             $this->_methodRenderer->setClass('customer_group_select');
@@ -56,15 +66,15 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
     protected function _prepareToRender()
     {
         $this->addColumn('allowed_methods', array(
-            'label' => Mage::helper('swisspost_yellowcube')->__('Methods'),
+            'label' => __('Methods'),
             'renderer' => $this->_getMethodRenderer(),
         ));
         $this->addColumn('price', array(
-            'label' => Mage::helper('swisspost_yellowcube')->__('Price'),
+            'label' => __('Price'),
             'style' => 'width:100px',
         ));
         $this->_addAfter = false;
-        $this->_addButtonLabel = Mage::helper('swisspost_yellowcube')->__('Add Shipping Method');
+        $this->_addButtonLabel = __('Add Shipping Method');
     }
 
     /**

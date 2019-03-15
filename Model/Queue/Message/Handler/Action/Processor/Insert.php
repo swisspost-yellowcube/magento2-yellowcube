@@ -56,7 +56,7 @@ class Insert
         $response = $this->getYellowCubeService()->insertArticleMasterData($article);
 
         if (!is_object($response) || !$response->isSuccess()) {
-            $message = Mage::helper('swisspost_yellowcube')->__('%s has an error with the insertArticleMasterData() Service', $data['product_sku']);
+            $message = __('%s has an error with the insertArticleMasterData() Service', $data['product_sku']);
             $this->logger->log(\Monolog\Logger::ERROR, $message.print_r($response,true));
             throw new \Magento\Framework\Exception\LocalizedException($message);
         } else if (Mage::helper('swisspost_yellowcube')->getDebug()) {

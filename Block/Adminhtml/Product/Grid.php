@@ -215,7 +215,7 @@ class Grid extends \Magento\Catalog\Block\Adminhtml\Product\Grid
 
         $this->addColumn('yc_most_recent_expiration_date',
             array(
-                'header'=> Mage::helper('swisspost_yellowcube')->__('exp Date'), //todo find the right helper
+                'header'=> __('exp Date'), //todo find the right helper
                 'width' => '80px',
                 'index' => 'yc_most_recent_expiration_date',
             ));

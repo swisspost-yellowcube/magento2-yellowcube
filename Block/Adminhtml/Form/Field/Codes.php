@@ -10,6 +10,9 @@
 
 namespace Swisspost\YellowCube\Block\Adminhtml\Form\Field;
 
+use Magento\Framework\View\Element\Context;
+use Swisspost\YellowCube\Helper\Data;
+
 /**
  * Class Swisspost_YellowCube_Block_Adminhtml_Form_Field_Codes
  */
@@ -21,16 +24,24 @@ class Codes extends \Magento\Framework\View\Element\Html\Select
      * @var array
      */
     private $_codes;
-    public function __construct(
-        \Magento\Framework\View\Element\Context $context,
-        array $data = []
-    ) {
-        parent::__construct(
-            $context,
-            $data
-        );
-    }
 
+    /**
+     * @var \Swisspost\YellowCube\Helper\Data
+     */
+    protected $dataHelper;
+
+    /**
+     * Codes constructor.
+     *
+     * @param Context $context
+     * @param Data $dataHelper
+     * @param array $data
+     */
+    public function __construct(Context $context, Data $dataHelper, array $data = [])
+    {
+        parent::__construct($context, $data);
+        $this->dataHelper = $dataHelper;
+    }
 
     /**
      * Retrieve allowed carrier codes
@@ -40,9 +51,9 @@ class Codes extends \Magento\Framework\View\Element\Html\Select
      */
     protected function _getCarrierCodes($code = null)
     {
-        if (is_null($this->_codes)) {
-            $this->_codes = array();
-            $codes = Mage::getConfig()->getNode('global/carriers/yellowcube/methods')->asArray();
+        if ($this->_codes === null) {
+            $this->_codes = [];
+            $codes = $this->dataHelper->getMethods();
 
             foreach ($codes as $key => $item) {
                 /* @var $item Mage_Customer_Model_Group */

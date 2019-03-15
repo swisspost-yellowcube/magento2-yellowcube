@@ -4,19 +4,19 @@
         <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\disableLotFields"/>
     </event>
     <event name="catalog_product_attribute_update_before">
-        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleAttributeProductSave"/>
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\HandleAttributeProductSaveBefore"/>
     </event>
     <event name="catalog_product_attribute_update_after">
-        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleAttributeProductSaveAfter"/>
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\HandleAttributeProductSaveAfter"/>
     </event>
     <event name="catalog_product_save_before">
-        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleBeforeProductSave"/>
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\HandleProductSaveBefore"/>
     </event>
     <event name="catalog_product_save_after">
-        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleProductSave"/>
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\HandleProductSaveAfter"/>
     </event>
     <event name="catalog_product_delete_before">
-        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleProductDelete"/>
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\HandleProductDelete"/>
     </event>
     <event name="sales_order_shipment_save_before">
         <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleShipmentSaveBefore"/>

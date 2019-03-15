@@ -24,21 +24,19 @@ class Operation
      */
     public function toOptionArray()
     {
-        $helper = Mage::helper('swisspost_yellowcube');
-
-        return array(
-            array(
+        return [
+            [
                 'value' => self::MODE_TESTING,
-                'label' => $helper->__('Test')
-            ),
-            array(
+                'label' => __('Test')
+            ],
+            [
                 'value' => self::MODE_DEVELOPMENT,
-                'label' => $helper->__('Development')
-            ),
-            array(
+                'label' => __('Development')
+            ],
+            [
                 'value' => self::MODE_PRODUCTION,
-                'label' => $helper->__('Production')
-            )
-        );
+                'label' => __('Production')
+            ]
+        ];
     }
 }

@@ -27,7 +27,7 @@ class Source extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
             {
                 $this->_options[] =
                     array(
-                        'label' => Mage::helper('swisspost_yellowcube')->__($elements['label']),
+                        'label' => __($elements['label']),
                         'value' => $key
                     );
             }

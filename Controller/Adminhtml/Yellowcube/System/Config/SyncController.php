@@ -27,7 +27,7 @@ class SyncController extends \Magento\Backend\App\Action
             //$this->getSynchronizer()->updateAll();
             $this->logger->debug('Swisspost Sync download');
             echo 1;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->critical($e);
             echo 0;
         }
@@ -40,7 +40,7 @@ class SyncController extends \Magento\Backend\App\Action
             $this->getSynchronizer()->updateAll();
             $this->logger->debug('Swisspost Sync upload');
             echo 1;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->critical($e);
             echo 0;
         }
