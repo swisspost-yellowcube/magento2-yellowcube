@@ -82,30 +82,30 @@ class War
                         $this->logger->critical($e);
                     }
 
-                    $this->logger->log(\Monolog\Logger::DEBUG, $this->getHelper()->__('Items for shipment %s considered as shipped',$shipment->getIncrementId()));
+                    $this->logger->log(\Monolog\Logger::DEBUG, __('Items for shipment %s considered as shipped',$shipment->getIncrementId()));
 
                     // shipping number contains a semicolon, post api supports multiple values
                     $shippingUrl = 'http://www.post.ch/swisspost-tracking?formattedParcelCodes=' . $shipmentNo;
 
                     // Add a message to the order history incl. link to shipping infos
-                    $message = $this->getHelper()->__('Your order has been shipped. You can use the following url for shipping tracking: <a href="%1$s" target="_blank">%1$s</a>', $shippingUrl);
-                    $message .= "\r\n" . $this->getHelper()->__('Lot ID: %s', $lotId);
-                    $message .= "\r\n" . $this->getHelper()->__('Quantity UOM: %s', $quantityUOM);
+                    $message = __('Your order has been shipped. You can use the following url for shipping tracking: <a href="%1$s" target="_blank">%1$s</a>', $shippingUrl);
+                    $message .= "\r\n" . __('Lot ID: %s', $lotId);
+                    $message .= "\r\n" . __('Quantity UOM: %s', $quantityUOM);
 
                     $track = $this->salesOrderShipmentTrackFactory->create();
                     $track
                         ->setCarrierCode($shipment->getOrder()->getShippingCarrier()->getCarrierCode())
-                        ->setTitle($this->getHelper()->__('SwissPost Tracking Code'))
+                        ->setTitle(__('SwissPost Tracking Code'))
                         ->setNumber($shippingUrl);
 
                     $shipment
                         ->addTrack($track)
-                        ->addComment($this->getHelper()->__($message), true, true)
+                        ->addComment(__($message), true, true)
                         ->save();
 
                     $shipment->sendEmail(true, $message);
 
-                    $this->logger->log(\Monolog\Logger::DEBUG, $this->getHelper()->__('Shipment %s comment added and email sent',$shipment->getIncrementId()));
+                    $this->logger->log(\Monolog\Logger::DEBUG, __('Shipment %s comment added and email sent',$shipment->getIncrementId()));
                 }
             }
 

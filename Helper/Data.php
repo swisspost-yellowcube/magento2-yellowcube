@@ -11,17 +11,19 @@ use Magento\Store\Model\ScopeInterface;
  */
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const CONFIG_SENDER_ID = 'yellowcube/sender_id';
-    const CONFIG_ENDPOINT = 'yellowcube/soap_url';
-    const CONFIG_PARTNER_NUMBER = 'yellowcube/partner_number';
-    const CONFIG_DEPOSITOR_NUMBER = 'yellowcube/depositor_number';
-    const CONFIG_PLANT_ID = 'yellowcube/plant_id';
-    const CONFIG_CERT_PATH = 'yellowcube/certificate_path';
-    const CONFIG_CERT_PASSWORD = 'yellowcube/certificate_password';
-    const CONFIG_TARA_FACTOR = 'yellowcube/tara_factor';
-    const CONFIG_OPERATION_MODE = 'yellowcube/operation_mode';
-    const CONFIG_DEBUG = 'yellowcube/debug';
-    const CONFIG_SHIPPING_ADDITIONAL = 'yellowcube/additional_methods';
+    const CONFIG_SENDER_ID = 'yellowcube/general/sender_id';
+    const CONFIG_CUSTOM_ENDPOINT = 'yellowcube/general/custom_url';
+    const CONFIG_ENDPOINT = 'yellowcube/general/soap_url';
+    const CONFIG_PARTNER_NUMBER = 'yellowcube/general/partner_number';
+    const CONFIG_DEPOSITOR_NUMBER = 'yellowcube/general/depositor_number';
+    const CONFIG_PLANT_ID = 'yellowcube/general/plant_id';
+    const CONFIG_CERT_PATH = 'yellowcube/general/certificate_path';
+    const CONFIG_CERT_PASSWORD = 'yellowcube/general/certificate_password';
+    const CONFIG_TARA_FACTOR = 'yellowcube/general/tara_factor';
+    const CONFIG_OPERATION_MODE = 'yellowcube/general/operation_mode';
+    const CONFIG_DEBUG = 'yellowcube/general/debug';
+    const CONFIG_SHIPPING_ADDITIONAL = 'yellowcube/general/additional_methods';
+    const DEFAULT_ENDPOINTS = 'yellowcube/default_endpoints';
 
     const YC_LOG_FILE = 'yellowcube.log';
 
@@ -68,7 +70,23 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getEndpoint($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (string)$this->getConfigValue(self::CONFIG_ENDPOINT, $storeId);
+        if ($this->getConfigValue(self::CONFIG_CUSTOM_ENDPOINT, $storeId)) {
+            return (string)$this->getConfigValue(self::CONFIG_ENDPOINT, $storeId);
+        } else {
+            switch ($this->getOperationMode($storeId)) {
+                case 'P':
+                    return (string)$this->getConfigValue(self::DEFAULT_ENDPOINTS . '/production', $storeId);
+                    break;
+
+                case 'T':
+                    return (string)$this->getConfigValue(self::DEFAULT_ENDPOINTS . '/test', $storeId);
+                    break;
+
+                case 'D':
+                    return (string)$this->getConfigValue(self::DEFAULT_ENDPOINTS . '/development', $storeId);
+                    break;
+            }
+        }
     }
 
     /**
@@ -202,7 +220,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getMethods()
     {
-        return (array) $this->scopeConfig->getValue('yellowcube/methods');
+        return (array)$this->scopeConfig->getValue('yellowcube/methods');
     }
 
     /**
@@ -274,5 +292,25 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         }
 
         return $result . '-' . $zip;
+    }
+
+    /**
+     * Check whether specified attribute has been changed for given entity
+     *
+     * @param \Magento\Framework\Model\AbstractModel $entity
+     * @param string|array $key
+     * @return bool
+     */
+    public function hasDataChangedFor(\Magento\Framework\Model\AbstractModel $entity, $key)
+    {
+        if (is_array($key)) {
+            foreach ($key as $code) {
+                if ($entity->getOrigData($code) !== $entity->getData($code)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return $entity->getOrigData($key) !== $entity->getData($key);
     }
 }

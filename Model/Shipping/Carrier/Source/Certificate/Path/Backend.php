@@ -43,8 +43,7 @@ class Backend extends \Magento\Framework\App\Config\Value
         $filePath = $this->getValue();
         if (!empty($filePath) && (!file_exists($filePath) || !is_readable($filePath))) {
             throw new \Exception(
-                Mage::helper('swisspost_yellowcube')
-                    ->__("Failed to load certificate from '%s'", $filePath)
+                __("Failed to load certificate from '%s'", $filePath)
             );
         }
 

@@ -56,7 +56,7 @@ class Bar
     {
         $stockItems = $this->getYellowCubeService()->getInventory();
 
-        $this->logger->log(\Monolog\Logger::INFO, $this->getHelper()->__('YellowCube reports %d products with a stock level',count($stockItems)));
+        $this->logger->log(\Monolog\Logger::INFO, __('YellowCube reports %d products with a stock level',count($stockItems)));
 
         /* @var $article \YellowCube\BAR\Article */
         foreach ($stockItems as $article)
@@ -120,7 +120,7 @@ class Bar
             ->load($productId);
 
         if (!$product->getId()) {
-            $this->logger->log(\Monolog\Logger::INFO, $this->getHelper()->__('Product %s inventory cannot be synchronized from YellowCube into Magento because it does not exist.',$productId));
+            $this->logger->log(\Monolog\Logger::INFO, __('Product %s inventory cannot be synchronized from YellowCube into Magento because it does not exist.',$productId));
             return $this;
         }
 
@@ -164,7 +164,7 @@ class Bar
 
         try {
             if ($this->getHelper()->getDebug()) {
-                $this->logger->log(\Monolog\Logger::INFO, $this->getHelper()->__('Product %s with the qty of %s will be saved..',$productId,$stockItem->getQty()));
+                $this->logger->log(\Monolog\Logger::INFO, __('Product %s with the qty of %s will be saved..',$productId,$stockItem->getQty()));
             }
             $stockItem->save();
         } catch (Exception $e) {

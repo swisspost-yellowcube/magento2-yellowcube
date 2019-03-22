@@ -33,7 +33,7 @@ class Client
 
         if (!$helper->isConfigured()) {
             Mage::throwException(
-                $helper->__('YellowCube Extension is not properly configured. Please <a href="%s">configure</a> it before to continue.',
+                __('YellowCube Extension is not properly configured. Please <a href="%s">configure</a> it before to continue.',
                     Mage::getUrl('system_config/edit/section/carriers')));
         }
 

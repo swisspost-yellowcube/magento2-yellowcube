@@ -4,6 +4,7 @@ namespace Swisspost\YellowCube\Observer;
 
 use Magento\Framework\Exception\LocalizedException;
 use Swisspost\YellowCube\Helper\Data;
+use Swisspost\YellowCube\Model\Synchronizer;
 
 class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterface
 {
@@ -17,13 +18,20 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
      * @var array
      */
     protected $_attributeProductIds;
+
+    /**
+     * @var Synchronizer
+     */
+    protected $synchronizer;
+
     /**
      * HandleProductSaveBefore constructor.
      * @param Data $dataHelper
      */
-    public function __construct(Data $dataHelper)
+    public function __construct(Data $dataHelper, Synchronizer $synchronizer)
     {
         $this->dataHelper = $dataHelper;
+        $this->synchronizer = $synchronizer;
     }
 
     /**
@@ -42,7 +50,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
         // reflect the value of the default view if "Use default Value" is checked
 
         if (!$this->dataHelper->isConfigured(/* $storeId */) && (bool)$product->getData('yc_sync_with_yellowcube')) {
-            throw new LocalizedException($this->dataHelper->__('Please, configure YellowCube before to save the product having YellowCube option enabled.'));
+            throw new LocalizedException(__('Please, configure YellowCube before to save the product having YellowCube option enabled.'));
         } else {
             if (!$this->dataHelper->isConfigured(/* $storeId */)) {
                 return $this;
@@ -61,31 +69,21 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
          * - if duplicate, we do nothing as the attribute 'yc_sync_with_yellowcube' = 0
          */
 
-        if ((bool)$product->getData('yc_sync_with_yellowcube') && $this->hasDataChangedFor($product,
-                array('yc_sync_with_yellowcube'))) {
-            $this->getSynchronizer()->insert($product);
-            return $this;
-        }
-
-        if (!(bool)$product->getData('yc_sync_with_yellowcube') && $this->hasDataChangedFor($product,
-                array('yc_sync_with_yellowcube'))) {
-            $this->getSynchronizer()->deactivate($product);
-            return $this;
+        if ($this->dataHelper->hasDataChangedFor($product, ['yc_sync_with_yellowcube'])) {
+            if ((bool)$product->getData('yc_sync_with_yellowcube')) {
+                $this->synchronizer->insert($product);
+                return $this;
+            } else {
+                $this->synchronizer->deactivate($product);
+            }
         }
 
         if (!(bool)$product->getData('yc_sync_with_yellowcube')) {
             return $this;
         }
 
-        if ($this->hasDataChangedFor($product, [
-            'name',
-            'weight',
-            'yc_dimension_length',
-            'yc_dimension_width',
-            'yc_dimension_height',
-            'yc_dimension_uom'
-        ])) {
-            $this->getSynchronizer()->update($product);
+        if ($this->dataHelper->hasDataChangedFor($product, ['name', 'weight', 'yc_dimension_length', 'yc_dimension_width', 'yc_dimension_height', 'yc_dimension_uom'])) {
+            $this->synchronizer->update($product);
             return $this;
         }
     }

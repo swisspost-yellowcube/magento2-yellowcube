@@ -201,13 +201,6 @@ class Observer
         return $this;
     }
 
-    public function disableLotFields(\Magento\Framework\Event\Observer $observer)
-    {
-        $event = $observer->getEvent();
-        $product = $event->getProduct();
-        $product->lockAttribute('yc_lot_info');
-        $product->lockAttribute('yc_most_recent_expiration_date');
-    }
 
     /**
      * @return \Magento\Framework\Session\Generic

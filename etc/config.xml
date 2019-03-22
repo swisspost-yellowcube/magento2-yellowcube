@@ -2,11 +2,13 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <yellowcube>
-            <active>0</active>
-            <model>swisspost_yellowcube/shipping_carrier_rate</model>
-            <title>SwissPost YellowCube</title>
-            <tara_factor>0.95</tara_factor>
-            <operation_mode>T</operation_mode>
+            <general>
+                <active>0</active>
+                <model>swisspost_yellowcube/shipping_carrier_rate</model>
+                <title>SwissPost YellowCube</title>
+                <tara_factor>0.95</tara_factor>
+                <operation_mode>T</operation_mode>
+            </general>
             <default_endpoints>
                 <production>https://service.swisspost.ch/apache/yellowcube/?wsdl</production>
                 <test>https://service-test.swisspost.ch/apache/yellowcube-int/?wsdl</test>

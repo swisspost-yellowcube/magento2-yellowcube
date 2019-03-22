@@ -57,7 +57,7 @@ class Update extends ProcessorAbstract implements ProcessorInterface {
 
         try {
             if (!is_object($response) || !$response->isSuccess()) {
-                $message = $this->getHelper()->__('Shipment #%s Status for Order #%s with YellowCube Transaction ID could not received from YellowCube: "%s".',
+                $message = __('Shipment #%s Status for Order #%s with YellowCube Transaction ID could not received from YellowCube: "%s".',
                     $shipment->getIncrementId(), $data['order_id'], $data['yc_reference'], $response->getStatusText());
 
                 $shipment
@@ -72,13 +72,13 @@ class Update extends ProcessorAbstract implements ProcessorInterface {
             } else {
                 if ($response->isSuccess() && !$response->isPending() && !$response->isError()) {
                     $shipment
-                        ->addComment($this->getHelper()->__('Success ' . $response->getStatusText()), false, false)
+                        ->addComment(__('Success ' . $response->getStatusText()), false, false)
                         ->save();
                 }
                 else if ($response->isError())
                 {
                     $shipment
-                        ->addComment($this->getHelper()->__('YellowCube Error: ' . $response->getStatusText()), false, false)
+                        ->addComment(__('YellowCube Error: ' . $response->getStatusText()), false, false)
                         ->save();
                 }
                 else if ($response->isPending())

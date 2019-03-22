@@ -133,7 +133,7 @@ class Wab
         $response = $this->getYellowCubeService()->createYCCustomerOrder($ycOrder);
         try {
             if (!is_object($response) || !$response->isSuccess()) {
-                $message = $this->getHelper()->__('Shipment #%s for Order #%s could not be transmitted to YellowCube: "%s".', $shipment->getIncrementId(), $data['order_increment_id'], $response->getStatusText());
+                $message = __('Shipment #%s for Order #%s could not be transmitted to YellowCube: "%s".', $shipment->getIncrementId(), $data['order_increment_id'], $response->getStatusText());
 
                 $shipment
                     ->addComment($message, false, false)
@@ -162,7 +162,7 @@ class Wab
                 }
 
                 $shipment
-                    ->addComment($this->getHelper()->__('Shipment #%s for Order #%s was successfully transmitted to YellowCube. Received reference number %s and status message "%s".', $shipment->getIncrementId(), $data['order_increment_id'], $response->getReference(), $response->getStatusText()), false, false)
+                    ->addComment(__('Shipment #%s for Order #%s was successfully transmitted to YellowCube. Received reference number %s and status message "%s".', $shipment->getIncrementId(), $data['order_increment_id'], $response->getReference(), $response->getStatusText()), false, false)
                     ->save();
 
                 // WAR Message

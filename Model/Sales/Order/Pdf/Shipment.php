@@ -129,16 +129,16 @@ class Shipment
     public function buildMap(\Magento\Sales\Model\Order\Shipment $shipment)
     {
         $map = array(
-            'packingslip_id_label' => $this->getSalesHelper()->__('Packingslip # '),
-            'order_id_label' => $this->getSalesHelper()->__('Order # '),
-            'order_date_label' => $this->getSalesHelper()->__('Order Date: '),
-            'billing_address_label' => $this->getSalesHelper()->__('Sold to:'),
-            'shipping_address_label' => $this->getSalesHelper()->__('Ship to:'),
-            'payment_method_label' => $this->getSalesHelper()->__('Payment Method:'),
-            'shipping_method_label' => $this->getSalesHelper()->__('Shipping Method:'),
-            'products_qty_label' => $this->getSalesHelper()->__('Qty'),
-            'products_label' => $this->getSalesHelper()->__('Products'),
-            'products_sku_label' => $this->getSalesHelper()->__('SKU'),
+            'packingslip_id_label' => __('Packingslip # '),
+            'order_id_label' => __('Order # '),
+            'order_date_label' => __('Order Date: '),
+            'billing_address_label' => __('Sold to:'),
+            'shipping_address_label' => __('Ship to:'),
+            'payment_method_label' => __('Payment Method:'),
+            'shipping_method_label' => __('Shipping Method:'),
+            'products_qty_label' => __('Qty'),
+            'products_label' => __('Products'),
+            'products_sku_label' => __('SKU'),
         );
 
         $order = $shipment->getOrder();
@@ -173,7 +173,7 @@ class Shipment
             ->setIsSecureMode(true)
             ->toHtml();
         $map['shipping_method'] = $order->getShippingDescription();
-        $map['shipping_charges'] = '(' . $this->getSalesHelper()->__('Total Shipping Charges') . ' '
+        $map['shipping_charges'] = '(' . __('Total Shipping Charges') . ' '
             . $order->formatPriceTxt($order->getShippingAmount()) . ')';
 
         $map['products_data'] = '';
