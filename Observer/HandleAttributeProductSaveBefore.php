@@ -37,10 +37,10 @@ class HandleAttributeProductSaveBefore implements \Magento\Framework\Event\Obser
 
         $actionResource = $this->catalogResourceModelProductActionFactory->create();
         $yc = $actionResource->getAttribute('yc_sync_with_yellowcube');
-        $ycl = $actionResource->getAttribute('yc_dimension_length');
-        $ycw = $actionResource->getAttribute('yc_dimension_width');
-        $ych = $actionResource->getAttribute('yc_dimension_height');
-        $ycuom = $actionResource->getAttribute('yc_dimension_uom');
+        $ycl = $actionResource->getAttribute('ts_dimensions_length');
+        $ycw = $actionResource->getAttribute('ts_dimensions_width');
+        $ych = $actionResource->getAttribute('ts_dimensions_height');
+        $ycuom = $actionResource->getAttribute('ts_dimensions_uom');
         $weight = $actionResource->getAttribute('weight');
 
         if (!$yc->getId()) {
@@ -59,7 +59,7 @@ class HandleAttributeProductSaveBefore implements \Magento\Framework\Event\Obser
              * If length/width/height in product is null => do nothing and doesn't allow to change the value
              */
             if (empty ($productYCLength) && empty($productYCWidth) && empty($productYCHeight)
-                && empty($attributesData['yc_dimension_length']) && empty($attributesData['yc_dimension_width']) && empty($attributesData['yc_dimension_height'])
+                && empty($attributesData['ts_dimensions_length']) && empty($attributesData['ts_dimensions_width']) && empty($attributesData['ts_dimensions_height'])
                 && !empty($attributesData['yc_sync_with_yellowcube'])
             ) {
 
@@ -82,10 +82,10 @@ class HandleAttributeProductSaveBefore implements \Magento\Framework\Event\Obser
                     }
                 } else if ((int) $productYCSync['value']) {
                     // We handle size and weight changes if YC is enabled
-                    if ((isset($attributesData['yc_dimension_length']) && $productYCLength['value'] != $attributesData['yc_dimension_length'])
-                        || (isset($attributesData['yc_dimension_width']) && $productYCWidth['value'] != $attributesData['yc_dimension_width'])
-                        || (isset($attributesData['yc_dimension_height']) && $productYCHeight['value'] != $attributesData['yc_dimension_height'])
-                        || (isset($attributesData['yc_dimension_uom']) && $productYCUom['value'] != $attributesData['yc_dimension_uom'])
+                    if ((isset($attributesData['ts_dimensions_length']) && $productYCLength['value'] != $attributesData['ts_dimensions_length'])
+                        || (isset($attributesData['ts_dimensions_width']) && $productYCWidth['value'] != $attributesData['ts_dimensions_width'])
+                        || (isset($attributesData['ts_dimensions_height']) && $productYCHeight['value'] != $attributesData['ts_dimensions_height'])
+                        || (isset($attributesData['ts_dimensions_uom']) && $productYCUom['value'] != $attributesData['ts_dimensions_uom'])
                         || (isset($attributesData['weight']) && $productWeight['value'] != $attributesData['weight'])
                     ) {
                         $this->getSynchronizer()->update($this->catalogProductFactory->create()->load($productId));

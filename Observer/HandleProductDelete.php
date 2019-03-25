@@ -14,17 +14,28 @@ class HandleProductDelete implements \Magento\Framework\Event\ObserverInterface
     protected $dataHelper;
 
     /**
-     * @var array
+     * @var Synchronizer
      */
-    protected $_attributeProductIds;
+    protected $synchronizer;
+
+    /**
+     * @var \Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable
+     */
+    protected $catalogProductTypeConfigurable;
 
     /**
      * HandleProductSaveBefore constructor.
      * @param Data $dataHelper
      */
-    public function __construct(Data $dataHelper)
+    public function __construct(
+        \Swisspost\YellowCube\Helper\Data $dataHelper,
+        \Swisspost\YellowCube\Model\Synchronizer $synchronizer,
+        \Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $catalogProductTypeConfigurable
+    )
     {
         $this->dataHelper = $dataHelper;
+        $this->synchronizer = $synchronizer;
+        $this->catalogProductTypeConfigurable = $catalogProductTypeConfigurable;
     }
 
     /**
@@ -38,6 +49,8 @@ class HandleProductDelete implements \Magento\Framework\Event\ObserverInterface
     {
         /** @var \Magento\Catalog\Model\Product $product */
         $product = $observer->getEvent()->getDataObject();
-        $this->getSynchronizer()->deactivate($product);
+        if ($this->dataHelper->isConfigured() && $product->getData('yc_sync_with_yellowcube')) {
+            $this->getSynchronizer()->deactivate($product);
+        }
     }
 }

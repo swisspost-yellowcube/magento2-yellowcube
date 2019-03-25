@@ -2,6 +2,7 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
+use Swisspost\YellowCube\Helper\Data;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 
@@ -37,68 +38,65 @@ class Bar
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
+        \Swisspost\YellowCube\Helper\Data $dataHelper,
+        \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory,
         \Magento\Catalog\Model\ProductFactory $catalogProductFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Catalog\Model\ResourceModel\Product\ActionFactory $catalogResourceModelProductActionFactory,
         \Magento\Sales\Model\ResourceModel\Order\Shipment\Item\CollectionFactory $salesResourceModelOrderShipmentItemCollectionFactory
     ) {
-        $this->logger = $logger;
+        parent::__construct($logger, $dataHelper, $clientFactory);
         $this->catalogProductFactory = $catalogProductFactory;
         $this->storeManager = $storeManager;
         $this->catalogResourceModelProductActionFactory = $catalogResourceModelProductActionFactory;
         $this->salesResourceModelOrderShipmentItemCollectionFactory = $salesResourceModelOrderShipmentItemCollectionFactory;
     }
+
     /**
      * @param array $data
      * @return $this
      */
     public function process(array $data)
     {
+        $this->logger->emergency('hi');
         $stockItems = $this->getYellowCubeService()->getInventory();
 
-        $this->logger->log(\Monolog\Logger::INFO, __('YellowCube reports %d products with a stock level',count($stockItems)));
+        $this->logger->info(__('YellowCube reports %d products with a stock level', count($stockItems)));
 
         /* @var $article \YellowCube\BAR\Article */
-        foreach ($stockItems as $article)
-        {
+        foreach ($stockItems as $article) {
             $articleNo = $article->getArticleNo();
             $articleLot = $article->getLot();
 
             //todo @psa make sure this gives NULL if empty
-            if (!is_null($article->getLot()))
-            {
+            if (!is_null($article->getLot())) {
                 $lotSummary[$articleNo]['qty'] = $article->getQuantityUOM()->get();
                 $lotSummary[$articleNo]['lotInfo'] = 'Lot: ' . $articleLot . " Quantity: " . (int)$article->getQuantityUOM()->get() . ' ExpDate: ' . $this->convertYCDate($article->getBestBeforeDate()) . PHP_EOL;
                 $lotSummary[$articleNo]['recentExpDate'] = $article->getBestBeforeDate();
 
-                foreach ($stockItems as $article2)
-                {
+                foreach ($stockItems as $article2) {
                     $article2No = $article2->getArticleNo();
                     $article2Lot = $article2->getLot();
                     //only do this if its not the lot already iterating
-                    if ($articleNo == $article2No && $articleLot != $article2Lot)
-                    {
+                    if ($articleNo == $article2No && $articleLot != $article2Lot) {
                         $lotSummary[$articleNo]['qty'] = $lotSummary[$articleNo]['qty'] + $article2->getQuantityUOM()->get();
-                        $lotSummary[$articleNo]['lotInfo'] = $lotSummary[$articleNo]['lotInfo']  . 'Lot: ' . $article2Lot . " Quantity: " . (int)$article2->getQuantityUOM()->get() . ' ExpDate: ' . $this->convertYCDate($article2->getBestBeforeDate()) . PHP_EOL;
+                        $lotSummary[$articleNo]['lotInfo'] = $lotSummary[$articleNo]['lotInfo'] . 'Lot: ' . $article2Lot . " Quantity: " . (int)$article2->getQuantityUOM()->get() . ' ExpDate: ' . $this->convertYCDate($article2->getBestBeforeDate()) . PHP_EOL;
                         $lotSummary[$articleNo]['recentExpDate'] = $article2->getBestBeforeDate() < $lotSummary[$articleNo]['recentExpDate'] ? $article2->getBestBeforeDate() : $lotSummary[$articleNo]['recentExpDate'];
                     }
                 }
-            }
-            else
-            {
+            } else {
                 $lotSummary[$articleNo]['qty'] = $article->getQuantityUOM()->get();
                 $lotSummary[$articleNo]['lotInfo'] = null;
                 $lotSummary[$articleNo]['recentExpDate'] = null;
             }
         }
 
-        foreach ($lotSummary as $articleNo => $articleData)
-        {
+        foreach ($lotSummary as $articleNo => $articleData) {
             //todo do the update here
             $this->update($articleNo, $articleData);
         }
 
-        $this->logger->log(\Monolog\Logger::INFO, print_r($lotSummary,true));
+        $this->logger->info(print_r($lotSummary, true));
 
         return $this;
     }
@@ -120,7 +118,9 @@ class Bar
             ->load($productId);
 
         if (!$product->getId()) {
-            $this->logger->log(\Monolog\Logger::INFO, __('Product %s inventory cannot be synchronized from YellowCube into Magento because it does not exist.',$productId));
+            $this->logger->log(\Monolog\Logger::INFO,
+                __('Product %s inventory cannot be synchronized from YellowCube into Magento because it does not exist.',
+                    $productId));
             return $this;
         }
 
@@ -164,7 +164,8 @@ class Bar
 
         try {
             if ($this->getHelper()->getDebug()) {
-                $this->logger->log(\Monolog\Logger::INFO, __('Product %s with the qty of %s will be saved..',$productId,$stockItem->getQty()));
+                $this->logger->log(\Monolog\Logger::INFO,
+                    __('Product %s with the qty of %s will be saved..', $productId, $stockItem->getQty()));
             }
             $stockItem->save();
         } catch (Exception $e) {
@@ -178,6 +179,6 @@ class Bar
      */
     protected function convertYCDate($date)
     {
-        return date('d.m.Y',strtotime($date));
+        return date('d.m.Y', strtotime($date));
     }
 }

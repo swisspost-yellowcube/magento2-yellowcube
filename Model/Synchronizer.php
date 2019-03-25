@@ -72,7 +72,7 @@ class Synchronizer
     }
     public function action(\Magento\Catalog\Model\Product $product, $action = self::SYNC_ACTION_INSERT)
     {
-        $this->publisher->publish('yellowcube.product.insert', $this->jsonSerializer->serialize([
+        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
             'action' => $action,
             'website_id' => $product->getWebsiteId(),
             'plant_id' => $this->dataHelper->getPlantId(),
@@ -81,11 +81,11 @@ class Synchronizer
             'product_sku' => $product->getSku(),
             'product_weight' => $product->getWeight(),
             'product_name' => $product->getName(),
-            'product_length' => $product->getData('yc_dimension_length'),
-            'product_width' => $product->getData('yc_dimension_width'),
-            'product_height' => $product->getData('yc_dimension_height'),
-            'product_uom' => $product->getData('yc_dimension_uom'),
-            'product_volume' => $product->getData('yc_dimension_height') * $product->getData('yc_dimension_length') *  $product->getData('yc_dimension_width'),
+            'product_length' => $product->getData('ts_dimensions_length'),
+            'product_width' => $product->getData('ts_dimensions_width'),
+            'product_height' => $product->getData('ts_dimensions_height'),
+            'product_uom' => $product->getData('ts_dimensions_uom'),
+            'product_volume' => $product->getData('ts_dimensions_height') * $product->getData('ts_dimensions_length') *  $product->getData('ts_dimensions_width'),
             'tara_factor' => $this->dataHelper->getTaraFactor(),
             'product_ean' => $product->getData('yc_ean_code'),
             'product_ean_type' => $product->getData('yc_ean_type'),
@@ -116,10 +116,10 @@ class Synchronizer
             'name',
             'weight',
             'yc_sync_with_yellowcube',
-            'yc_dimension_length',
-            'yc_dimension_width',
-            'yc_dimension_height',
-            'yc_dimension_uom',
+            'ts_dimensions_length',
+            'ts_dimensions_width',
+            'ts_dimensions_height',
+            'ts_dimensions_uom',
             'yc_ean_type',
             'yc_ean_code',
 
@@ -178,7 +178,7 @@ class Synchronizer
             );
         }
 
-        $this->getQueue()->send(\Zend_Json::encode(array(
+        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
             'action'    => self::SYNC_ORDER_WAB,
             'store_id'  => $request->getStoreId(),
             'plant_id'  => $this->dataHelper->getPlantId($request->getStoreId()),
@@ -213,7 +213,7 @@ class Synchronizer
 
             // Order Positions
             'items' => $positionItems
-        )));
+        ]));
 
         return $this;
     }
@@ -223,9 +223,9 @@ class Synchronizer
      */
     public function bar()
     {
-        $this->getQueue()->send(\Zend_Json::encode(array(
-            'action' => self::SYNC_INVENTORY
-        )));
+        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
+            'action' => self::SYNC_INVENTORY,
+        ]));
         return $this;
     }
 
@@ -234,20 +234,9 @@ class Synchronizer
      */
     public function war()
     {
-        $this->getQueue()->send(\Zend_Json::encode(array(
-            'action' => self::SYNC_WAR
-        )));
+        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
+            'action' => self::SYNC_WAR,
+        ]));
         return $this;
-    }
-
-    /**
-     * @return \Zend_Queue
-     */
-    public function getQueue()
-    {
-        if (null === $this->_queue) {
-            $this->_queue = Mage::getModel('swisspost_yellowcube/queue')->getInstance();
-        }
-        return $this->_queue;
     }
 }

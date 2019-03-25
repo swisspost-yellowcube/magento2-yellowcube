@@ -26,12 +26,14 @@ class War
     protected $salesOrderShipmentTrackFactory;
 
     public function __construct(
-        \Magento\Sales\Model\Order\ShipmentFactory $salesOrderShipmentFactory,
         \Psr\Log\LoggerInterface $logger,
+        \Swisspost\YellowCube\Helper\Data $dataHelper,
+        \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory,
+        \Magento\Sales\Model\Order\ShipmentFactory $salesOrderShipmentFactory,
         \Magento\Sales\Model\Order\Shipment\TrackFactory $salesOrderShipmentTrackFactory
     ) {
+        parent::__construct($logger, $dataHelper, $clientFactory);
         $this->salesOrderShipmentFactory = $salesOrderShipmentFactory;
-        $this->logger = $logger;
         $this->salesOrderShipmentTrackFactory = $salesOrderShipmentTrackFactory;
     }
     /**

@@ -25,13 +25,23 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
     protected $synchronizer;
 
     /**
+     * @var \Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable
+     */
+    protected $catalogProductTypeConfigurable;
+
+    /**
      * HandleProductSaveBefore constructor.
      * @param Data $dataHelper
      */
-    public function __construct(Data $dataHelper, Synchronizer $synchronizer)
+    public function __construct(
+        \Swisspost\YellowCube\Helper\Data $dataHelper,
+        \Swisspost\YellowCube\Model\Synchronizer $synchronizer,
+        \Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $catalogProductTypeConfigurable
+    )
     {
         $this->dataHelper = $dataHelper;
         $this->synchronizer = $synchronizer;
+        $this->catalogProductTypeConfigurable = $catalogProductTypeConfigurable;
     }
 
     /**
@@ -49,10 +59,23 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
         // @todo Make it work with multiple websites. Note: value of yc_sync_with_yellowcube on product save doesn't
         // reflect the value of the default view if "Use default Value" is checked
 
-        if (!$this->dataHelper->isConfigured(/* $storeId */) && (bool)$product->getData('yc_sync_with_yellowcube')) {
+        $is_configured = $this->dataHelper->isConfigured(/* $storeId */);
+        $sync = FALSE;
+        // @todo Add support for virtual products.
+        if (FALSE && $product->isVirtual()) {
+            $parents = $this->catalogProductTypeConfigurable->getParentIdsByChild($product->getId());
+            if ($parents) {
+                $sync = $parents[0]->getData('yc_sync_with_yellowcube');
+            }
+        }
+        else {
+            $sync = $this->dataHelper->isConfigured(/* $storeId */);
+        }
+
+        if (!$is_configured && (bool)sync) {
             throw new LocalizedException(__('Please, configure YellowCube before to save the product having YellowCube option enabled.'));
         } else {
-            if (!$this->dataHelper->isConfigured(/* $storeId */)) {
+            if (!$is_configured) {
                 return;
             }
         }
@@ -83,7 +106,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
             return;
         }
 
-        if ($this->dataHelper->hasDataChangedFor($product, ['name', 'weight', 'yc_dimension_length', 'yc_dimension_width', 'yc_dimension_height', 'yc_dimension_uom'])) {
+        if ($this->dataHelper->hasDataChangedFor($product, ['name', 'weight', 'ts_dimensions_length', 'ts_dimensions_width', 'ts_dimensions_height', 'ts_dimensions_uom'])) {
             $this->synchronizer->update($product);
             return;
         }
