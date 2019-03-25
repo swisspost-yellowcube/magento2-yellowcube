@@ -149,7 +149,7 @@ class Synchronizer
      */
     public function deactivate(\Magento\Catalog\Model\Product $product)
     {
-        //$this->action($product, self::SYNC_ACTION_DEACTIVATE);
+        $this->action($product, self::SYNC_ACTION_DEACTIVATE);
         return $this;
     }
 

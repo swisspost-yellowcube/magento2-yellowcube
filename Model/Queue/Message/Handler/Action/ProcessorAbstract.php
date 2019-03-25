@@ -24,20 +24,13 @@ abstract class ProcessorAbstract implements ProcessorInterface
      */
     protected $clientFactory;
 
-    /**
-     * @var \Magento\Framework\Serialize\Serializer\Json
-     */
-    protected $jsonSerializer;
-
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         Data $dataHelper,
-        Json $jsonSerializer,
         \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory
     ) {
         $this->logger = $logger;
         $this->dataHelper = $dataHelper;
-        $this->jsonSerializer = $jsonSerializer;
         $this->clientFactory = $clientFactory;
     }
 
@@ -102,10 +95,6 @@ abstract class ProcessorAbstract implements ProcessorInterface
         }
 
         return false;
-    }
-
-    public function receiveFromMessageQueue($data) {
-        $this->process($this->jsonSerializer->unserialize($data));
     }
 
 }

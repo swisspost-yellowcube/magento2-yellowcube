@@ -1,8 +1,4 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
-    <template name="system_admin_notification_email_template" translate="label" module="swisspost_yellowcube">
-        <label>Admin Email Notification</label>
-        <file>swisspost/admin_message.html</file>
-        <type>text</type>
-    </template>
+    <template id="yellowcube_admin_notification_email_template" label="YellowCube Admin Email Notification" file="swisspost/admin_message.html.html" type="text" module="Swisspost_YellowCube" area="adminhtml"/>
 </config>

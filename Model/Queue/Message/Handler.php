@@ -1,23 +1,52 @@
 <?php
 
-namespace Swisspost\YellowCube\Model\Queue\Message\Handler;
+namespace Swisspost\YellowCube\Model\Queue\Message;
 
-
+use Magento\Framework\ObjectManagerInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 
+/**
+ * Message queue consumer that forwards to the respective action class.
+ */
 class Handler
 {
-    public function process(array $data)
+
+    /**
+     * @var \Magento\Framework\Serialize\Serializer\Json
+     */
+    protected $jsonSerializer;
+
+    /**
+     * @var ObjectManagerInterface
+     */
+    protected $objectManager;
+
+    public function __construct(
+        Json $jsonSerializer,
+        ObjectManagerInterface $objectManager
+    ) {
+        $this->jsonSerializer = $jsonSerializer;
+        $this->objectManager = $objectManager;
+    }
+
+    /**
+
+     * @param string $data
+     * @throws \Exception
+     */
+    public function process(string $data)
     {
-        /** @var Swisspost_YellowCube_Model_Queue_Message_Handler_Action_ProcessorInterface $processor */
-        $processor = Mage::getModel('swisspost_yellowcube/queue_message_handler_action_processor_' . $data['action']);
+        $data = $this->jsonSerializer->unserialize($data);
+        // @todo Refactor this, use full class name in action, virtual types?
+        $processor = $this->objectManager->get('Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor\\' . ucfirst($data['action']));
         if ($processor instanceof ProcessorInterface) {
             $processor->process($data);
             return;
         }
         throw new \Exception(
             get_class($processor)
-            . ' doesn\'t implement Swisspost_YellowCube_Model_Queue_Message_Handler_Action_ProcessorInterface'
+            . ' doesn\'t implement ' . ProcessorInterface::class
         );
     }
 }

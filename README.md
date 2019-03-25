@@ -24,6 +24,9 @@ Some classes and javascript contain a MIT license.
 
 In Menu `Stores > Configuration > Services
 
+@todo Figure out shipping
+@todo Store locale must be set to DE or EN UK to use cm and not inch.
+
 ### User Manual / Configuration Manual
 
 @TODO
