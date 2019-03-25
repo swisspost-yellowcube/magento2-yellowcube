@@ -16,7 +16,7 @@ class HandleProductSaveAfter implements \Magento\Framework\Event\ObserverInterfa
     /**
      * @var array
      */
-    protected $_attributeProductIds;
+    protected $_attributeProductIds = [];
 
     /**
      * HandleProductSaveBefore constructor.

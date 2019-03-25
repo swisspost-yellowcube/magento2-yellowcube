@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/queue.xsd">
+    <topic name="yellowcube.product.insert" request="string">
+        <handler name="yellowcube.production.insert" type="Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor\Insert" method="process" />
+    </topic>
+</config>

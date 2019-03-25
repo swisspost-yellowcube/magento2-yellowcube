@@ -2,10 +2,16 @@
 
 namespace Swisspost\YellowCube\Model;
 
+use Magento\Framework\Json\Encoder;
+use Magento\Framework\Serialize\Serializer\Json;
 use Swisspost\YellowCube\Helper\Data;
+use Swisspost\YellowCube\Helper\FormatHelper;
+use Swisspost\YellowCube\Model\Dimension\Uom\Attribute\Source;
 
 class Synchronizer
 {
+    use FormatHelper;
+
     const SYNC_ACTION_INSERT                = 'insert';
     const SYNC_ACTION_UPDATE                = 'update';
     const SYNC_ACTION_DEACTIVATE            = 'deactivate';
@@ -20,9 +26,9 @@ class Synchronizer
     protected $_queue;
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var \Swisspost\YellowCube\Helper\Data
      */
-    protected $scopeConfig;
+    protected $dataHelper;
 
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
@@ -39,24 +45,38 @@ class Synchronizer
      */
     protected $catalogProductFactory;
 
+    /**
+     * @var \Magento\Framework\MessageQueue\PublisherInterface
+     */
+    private $publisher;
+
+    /**
+     * @var \Magento\Framework\Serialize\Serializer\Json
+     */
+    private $jsonSerializer;
+
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        Data $dataHelper,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $catalogResourceModelProductCollectionFactory,
-        \Magento\Catalog\Model\ProductFactory $catalogProductFactory
+        \Magento\Catalog\Model\ProductFactory $catalogProductFactory,
+        \Magento\Framework\MessageQueue\PublisherInterface $publisher,
+        Json $json_serializer
     ) {
-        $this->scopeConfig = $scopeConfig;
+        $this->dataHelper = $dataHelper;
         $this->storeManager = $storeManager;
         $this->catalogResourceModelProductCollectionFactory = $catalogResourceModelProductCollectionFactory;
         $this->catalogProductFactory = $catalogProductFactory;
+        $this->publisher = $publisher;
+        $this->jsonSerializer = $json_serializer;
     }
     public function action(\Magento\Catalog\Model\Product $product, $action = self::SYNC_ACTION_INSERT)
     {
-        $this->getQueue()->send(\Zend_Json::encode(array(
+        $this->publisher->publish('yellowcube.product.insert', $this->jsonSerializer->serialize([
             'action' => $action,
             'website_id' => $product->getWebsiteId(),
-            'plant_id' => $this->getHelper()->getPlantId(),
-            'deposit_number' => $this->getHelper()->getDepositorNumber(),
+            'plant_id' => $this->dataHelper->getPlantId(),
+            'deposit_number' => $this->dataHelper->getDepositorNumber(),
             'product_id' => $product->getId(),
             'product_sku' => $product->getSku(),
             'product_weight' => $product->getWeight(),
@@ -66,11 +86,11 @@ class Synchronizer
             'product_height' => $product->getData('yc_dimension_height'),
             'product_uom' => $product->getData('yc_dimension_uom'),
             'product_volume' => $product->getData('yc_dimension_height') * $product->getData('yc_dimension_length') *  $product->getData('yc_dimension_width'),
-            'tara_factor' => $this->scopeConfig->getValue(Data::CONFIG_TARA_FACTOR, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $this->storeManager->getWebsite($product->getWebsiteId())->getDefaultStore()->getId()),
+            'tara_factor' => $this->dataHelper->getTaraFactor(),
             'product_ean' => $product->getData('yc_ean_code'),
             'product_ean_type' => $product->getData('yc_ean_type'),
             'product_lot_management' => $product->getData('yc_requires_lot_management'),
-        )));
+        ]));
 
         return $this;
     }
@@ -129,7 +149,7 @@ class Synchronizer
      */
     public function deactivate(\Magento\Catalog\Model\Product $product)
     {
-        $this->action($product, self::SYNC_ACTION_DEACTIVATE);
+        //$this->action($product, self::SYNC_ACTION_DEACTIVATE);
         return $this;
     }
 
@@ -161,18 +181,18 @@ class Synchronizer
         $this->getQueue()->send(\Zend_Json::encode(array(
             'action'    => self::SYNC_ORDER_WAB,
             'store_id'  => $request->getStoreId(),
-            'plant_id'  => $this->getHelper()->getPlantId($request->getStoreId()),
+            'plant_id'  => $this->dataHelper->getPlantId($request->getStoreId()),
 
             // Order Header
-            'deposit_number'    => $this->getHelper()->getDepositorNumber($request->getStoreId()),
+            'deposit_number'    => $this->dataHelper->getDepositorNumber($request->getStoreId()),
             'order_id'          => $order->getOrderId(),
             'order_increment_id' => $realOrder->getIncrementId(),
             'order_date'        => date('Ymd'),
 
             // Partner Address
             'partner_type'          => Swisspost_YellowCube_Helper_Data::PARTNER_TYPE,
-            'partner_number'        => $this->getHelper()->getPartnerNumber($request->getStoreId()),
-            'partner_reference'     => $this->getHelper()->getPartnerReference(
+            'partner_number'        => $this->dataHelper->getPartnerNumber($request->getStoreId()),
+            'partner_reference'     => $this->dataHelper->getPartnerReference(
                 $request->getRecipientContactPersonName(),
                 $request->getRecipientAddressPostalCode()
             ),
@@ -229,13 +249,5 @@ class Synchronizer
             $this->_queue = Mage::getModel('swisspost_yellowcube/queue')->getInstance();
         }
         return $this->_queue;
-    }
-
-    /**
-     * @return Swisspost_YellowCube_Helper_Data
-     */
-    public function getHelper()
-    {
-        return Mage::helper('swisspost_yellowcube');
     }
 }

@@ -9,6 +9,7 @@ use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Eav\Model\Config;
+use Swisspost\YellowCube\Model\Ean\Type\Source;
 
 class InstallData implements InstallDataInterface
 {
@@ -41,13 +42,65 @@ class InstallData implements InstallDataInterface
                 'frontend' => '',
                 'label' => 'Sync With YellowCube',
                 'input' => 'select',
-                'note' => 'My Sample Attribute',
                 'class' => '',
                 'source' => Boolean::class,
                 'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
                 'visible' => true,
-                'required' => false,
+                'required' => true,
                 'user_defined' => true,
+                'searchable' => false,
+                'filterable' => false,
+                'comparable' => false,
+                'visible_on_front' => false,
+                'used_in_product_listing' => false,
+                'unique' => false,
+                'apply_to' => 'simple',
+                'default' => Boolean::VALUE_NO
+            ]
+        );
+
+        $eavSetup->addAttribute(
+            \Magento\Catalog\Model\Product::ENTITY,
+            'yc_ean_type',
+            [
+                'group' => $ycGroupName,
+                'type' => 'varchar',
+                'backend' => '',
+                'frontend' => '',
+                'label' => 'EAN Type',
+                'input' => 'select',
+                'class' => '',
+                'source' => Source::class,
+                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'visible' => true,
+                'required' => false,
+                'user_defined' => false,
+                'searchable' => false,
+                'filterable' => false,
+                'comparable' => false,
+                'visible_on_front' => false,
+                'used_in_product_listing' => true,
+                'unique' => false,
+                'apply_to' => 'simple'
+            ]
+        );
+
+        $eavSetup->addAttribute(
+            \Magento\Catalog\Model\Product::ENTITY,
+            'yc_ean_code',
+            [
+                'group' => $ycGroupName,
+                'type' => 'varchar',
+                'backend' => '',
+                'frontend' => '',
+                'label' => 'EAN Code',
+                'input' => 'text',
+                'class' => '',
+                'source' => Source::class,
+                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'visible' => true,
+                'required' => false,
+                'user_defined' => false,
                 'default' => '',
                 'searchable' => false,
                 'filterable' => false,
@@ -55,8 +108,7 @@ class InstallData implements InstallDataInterface
                 'visible_on_front' => false,
                 'used_in_product_listing' => true,
                 'unique' => false,
-                'apply_to' => 'simple',
-                'default' => Boolean::VALUE_NO
+                'apply_to' => 'simple'
             ]
         );
 

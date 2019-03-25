@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/consumer.xsd">
+    <consumer name="yellowcube.product.insert" queue="yellowcube.product.insert" connection="db" consumerInstance="Magento\Framework\MessageQueue\Consumer" handler="Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor\Insert::receiveFromMessageQueue"/>
+</config>

@@ -2,9 +2,30 @@
 
 namespace Swisspost\YellowCube\Model\Ean\Type;
 
+use Swisspost\YellowCube\Helper\Data;
+
 class Source extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
 {
 
+
+    /**
+     * @var \Swisspost\YellowCube\Helper\Data
+     */
+    protected $dataHelper;
+
+    /**
+     * @var array
+     */
+    protected $_attributeProductIds;
+
+    /**
+     * HandleProductSaveBefore constructor.
+     * @param Data $dataHelper
+     */
+    public function __construct(Data $dataHelper)
+    {
+        $this->dataHelper = $dataHelper;
+    }
 
     /**
      * Retrieve all options array
@@ -16,13 +37,11 @@ class Source extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
 
         if (is_null($this->_options)) {
             $this->_options = array();
-            foreach(Mage::getConfig()->getNode('global/carriers/yellowcube/ean/type')->asArray() as $key => $elements)
-            {
-                $this->_options[] =
-                    array(
-                        'label' => __($elements['label']),
-                        'value' => strtoupper($key)
-                    );
+            foreach ($this->dataHelper->getEanTypes() as $key => $elements) {
+                $this->_options[] = [
+                    'label' => __($elements['label']),
+                    'value' => strtoupper($key)
+                ];
             }
         }
         return $this->_options;

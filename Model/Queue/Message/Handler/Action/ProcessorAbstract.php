@@ -2,19 +2,51 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action;
 
-abstract class ProcessorAbstract
+use Magento\Framework\Serialize\Serializer\Json;
+use Swisspost\YellowCube\Helper\Data;
+use Swisspost\YellowCube\Helper\FormatHelper;
+
+abstract class ProcessorAbstract implements ProcessorInterface
 {
+
     /**
-     * @var \Zend_Queue
+     * @var \Psr\Log\LoggerInterface
      */
-    protected $_queue;
+    protected $logger;
+
+    /**
+     * @var Data
+     */
+    protected $dataHelper;
+
+    /**
+     * @var \Swisspost\YellowCube\Model\Library\ClientFactory
+     */
+    protected $clientFactory;
+
+    /**
+     * @var \Magento\Framework\Serialize\Serializer\Json
+     */
+    protected $jsonSerializer;
+
+    public function __construct(
+        \Psr\Log\LoggerInterface $logger,
+        Data $dataHelper,
+        Json $jsonSerializer,
+        \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory
+    ) {
+        $this->logger = $logger;
+        $this->dataHelper = $dataHelper;
+        $this->jsonSerializer = $jsonSerializer;
+        $this->clientFactory = $clientFactory;
+    }
 
     /**
      * @return \\YellowCube\Service
      */
     public function getYellowCubeService()
     {
-        return Mage::getModel('swisspost_yellowcube/library_client')->getService();
+        return $this->clientFactory->getService();
     }
 
     /**
@@ -54,17 +86,6 @@ abstract class ProcessorAbstract
     }
 
     /**
-     * @return \Zend_Queue
-     */
-    public function getQueue()
-    {
-        if (null === $this->_queue) {
-            $this->_queue = Mage::getModel('swisspost_yellowcube/queue')->getInstance();
-        }
-        return $this->_queue;
-    }
-
-    /**
      * @param $elem
      * @param $array
      * @return bool
@@ -83,11 +104,8 @@ abstract class ProcessorAbstract
         return false;
     }
 
-    /**
-     * @return Swisspost_YellowCube_Helper_Data
-     */
-    public function getHelper()
-    {
-        return Mage::helper('swisspost_yellowcube');
+    public function receiveFromMessageQueue($data) {
+        $this->process($this->jsonSerializer->unserialize($data));
     }
+
 }

@@ -2,7 +2,7 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
-use Swisspost\YellowCube\Model\Ean\Type\Source;
+use Swisspost\YellowCube\Model\Dimension\Uom\Attribute\Source;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 
@@ -11,17 +11,6 @@ class Insert
   implements ProcessorInterface
 {
     protected $_changeFlag = \YellowCube\ART\ChangeFlag::INSERT;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $logger;
-
-    public function __construct(
-        \Psr\Log\LoggerInterface $logger
-    ) {
-        $this->logger = $logger;
-    }
     /**
      * @param array $data
      * @return $this
@@ -57,10 +46,10 @@ class Insert
 
         if (!is_object($response) || !$response->isSuccess()) {
             $message = __('%s has an error with the insertArticleMasterData() Service', $data['product_sku']);
-            $this->logger->log(\Monolog\Logger::ERROR, $message.print_r($response,true));
+            $this->logger->error($message.print_r($response,true));
             throw new \Magento\Framework\Exception\LocalizedException($message);
-        } else if (Mage::helper('swisspost_yellowcube')->getDebug()) {
-            $this->logger->log(\Monolog\Logger::DEBUG, print_r($response,true));
+        } else if ($this->dataHelper->getDebug()) {
+            $this->logger->debug(print_r($response,true));
         }
 
         return $this;

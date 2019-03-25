@@ -37,7 +37,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
     /**
      * @param \Magento\Framework\Event\Observer $observer
      *
-     * @return $this|void
+     * @return void
      *
      * @throws LocalizedException
      */
@@ -53,7 +53,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
             throw new LocalizedException(__('Please, configure YellowCube before to save the product having YellowCube option enabled.'));
         } else {
             if (!$this->dataHelper->isConfigured(/* $storeId */)) {
-                return $this;
+                return;
             }
         }
 
@@ -72,19 +72,20 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
         if ($this->dataHelper->hasDataChangedFor($product, ['yc_sync_with_yellowcube'])) {
             if ((bool)$product->getData('yc_sync_with_yellowcube')) {
                 $this->synchronizer->insert($product);
-                return $this;
+                return;
             } else {
                 $this->synchronizer->deactivate($product);
+                return;
             }
         }
 
         if (!(bool)$product->getData('yc_sync_with_yellowcube')) {
-            return $this;
+            return;
         }
 
         if ($this->dataHelper->hasDataChangedFor($product, ['name', 'weight', 'yc_dimension_length', 'yc_dimension_width', 'yc_dimension_height', 'yc_dimension_uom'])) {
             $this->synchronizer->update($product);
-            return $this;
+            return;
         }
     }
 }

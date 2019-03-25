@@ -224,6 +224,17 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Returns allowed methods.
+     *
+     * @return array
+     *   The allowed shipping methods.
+     */
+    public function getEanTypes()
+    {
+        return (array)$this->scopeConfig->getValue('yellowcube/ean/type');
+    }
+
+    /**
      * Get real shipping code
      *
      * @param $shippingCode
