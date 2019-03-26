@@ -14,7 +14,7 @@ use Magento\Framework\View\Element\Context;
 use Swisspost\YellowCube\Helper\Data;
 
 /**
- * Class Swisspost_YellowCube_Block_Adminhtml_Form_Field_Codes
+ * Shipping codes HTML select element.
  */
 class Codes extends \Magento\Framework\View\Element\Html\Select
 {
@@ -56,7 +56,6 @@ class Codes extends \Magento\Framework\View\Element\Html\Select
             $codes = $this->dataHelper->getMethods();
 
             foreach ($codes as $key => $item) {
-                /* @var $item Mage_Customer_Model_Group */
                 $this->_codes[$item['code']] = $item['label'];
             }
         }

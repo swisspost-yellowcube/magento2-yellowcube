@@ -19,7 +19,7 @@ use Swisspost\YellowCube\Helper\Data;
 class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray
 {
     /**
-     * @var Swisspost_YellowCube_Block_Adminhtml_Form_Field_Codes
+     * @var Codes
      */
     protected $_methodRenderer;
 
@@ -29,7 +29,7 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
     protected $dataHelper;
 
     /**
-     * Codes constructor.
+     * Methods constructor.
      *
      * @param Context $context
      * @param Data $dataHelper
@@ -41,18 +41,20 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
         $this->dataHelper = $dataHelper;
     }
 
-
     /**
      * Retrieve group column renderer
      *
-     * @return Swisspost_YellowCube_Block_Adminhtml_Form_Field_Codes
+     * @return Codes
+     *
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _getMethodRenderer()
     {
         if (!$this->_methodRenderer) {
             $this->_methodRenderer = $this->getLayout()->createBlock(
-                Codes::class, '',
-                array('is_render_to_js_template' => true)
+                Codes::class,
+                '',
+                ['is_render_to_js_template' => true]
             );
             $this->_methodRenderer->setClass('customer_group_select');
             $this->_methodRenderer->setExtraParams('style="width:120px"');
@@ -65,14 +67,14 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
      */
     protected function _prepareToRender()
     {
-        $this->addColumn('allowed_methods', array(
+        $this->addColumn('allowed_methods', [
             'label' => __('Methods'),
             'renderer' => $this->_getMethodRenderer(),
-        ));
-        $this->addColumn('price', array(
+        ]);
+        $this->addColumn('price', [
             'label' => __('Price'),
             'style' => 'width:100px',
-        ));
+        ]);
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add Shipping Method');
     }

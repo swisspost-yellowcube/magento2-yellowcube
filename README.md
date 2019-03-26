@@ -41,5 +41,6 @@ In Menu `Stores > Configuration > Sales > Shipping Methods`
 ## Known issues/current state
 
 * The shipping methods are not selected correctly yet after saving, but they are saved.
+* Sync operations on settings form are not yet working.
 * Stock/Source management is not yet working
 
