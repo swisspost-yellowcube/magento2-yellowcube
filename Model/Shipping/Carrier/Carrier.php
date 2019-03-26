@@ -1,10 +1,13 @@
 <?php
 
-namespace Swisspost\YellowCube\Model\Shipping\Carrier\Source;
+namespace Swisspost\YellowCube\Model\Shipping\Carrier;
 
 use Magento\Shipping\Model\Carrier\CarrierInterface;
+use Magento\Shipping\Model\Shipment\Request;
+use Swisspost\YellowCube\Helper\Data;
+use Swisspost\YellowCube\Model\Synchronizer;
 
-class Rate extends \Magento\Shipping\Model\Carrier\AbstractCarrier
+class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier
     implements CarrierInterface
 {
     /**
@@ -32,6 +35,11 @@ class Rate extends \Magento\Shipping\Model\Carrier\AbstractCarrier
      */
     protected $dataObjectFactory;
 
+    /**
+     * @var \Swisspost\YellowCube\Helper\Data
+     */
+    protected $dataHelper;
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory $rateErrorFactory,
@@ -39,19 +47,17 @@ class Rate extends \Magento\Shipping\Model\Carrier\AbstractCarrier
         \Magento\Shipping\Model\Rate\ResultFactory $shippingRateResultFactory,
         \Magento\Quote\Model\Quote\Address\RateResult\MethodFactory $quoteQuoteAddressRateResultMethodFactory,
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
+        Synchronizer $synchronizer,
+        \Swisspost\YellowCube\Helper\Data $dataHelper,
         array $data = []
     ) {
+        parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
         $this->dataObjectFactory = $dataObjectFactory;
         $this->shippingRateResultFactory = $shippingRateResultFactory;
         $this->quoteQuoteAddressRateResultMethodFactory = $quoteQuoteAddressRateResultMethodFactory;
-        parent::__construct(
-            $scopeConfig,
-            $rateErrorFactory,
-            $logger,
-            $data
-        );
+        $this->synchronizer = $synchronizer;
+        $this->dataHelper = $dataHelper;
     }
-
 
     /**
      * @return bool
@@ -67,7 +73,7 @@ class Rate extends \Magento\Shipping\Model\Carrier\AbstractCarrier
      */
     public function collectRates(\Magento\Quote\Model\Quote\Address\RateRequest $request)
     {
-        if (!$this->getConfigFlag('active')) {
+        if (!$this->getConfigData('active')) {
             return false;
         }
 
@@ -98,10 +104,10 @@ class Rate extends \Magento\Shipping\Model\Carrier\AbstractCarrier
      */
     public function getPriceMethod($code)
     {
-        $allowedMethods = unserialize($this->getConfigData('allowed_methods'));
+        $allowedMethods = $this->dataHelper->getAllowedMethods();
 
         foreach ($allowedMethods as $method) {
-            if ($method['allowed_methods'] == $code) {
+            if (strtolower($method['allowed_methods']) == $code) {
                 return $method['price'];
             }
         }
@@ -115,12 +121,12 @@ class Rate extends \Magento\Shipping\Model\Carrier\AbstractCarrier
      */
     public function getAllowedMethods()
     {
-        $methods = Mage::getSingleton('swisspost_yellowcube/shipping_carrier_source_method')->getMethods();
-        $allowedMethods = unserialize($this->getConfigData('allowed_methods'));
+        $methods = $this->dataHelper->getMethods();
+        $allowedMethods = $this->dataHelper->getAllowedMethods();
 
         $allowed = array();
         foreach ($allowedMethods as $method) {
-            $allowed[$method['allowed_methods']] = $method['allowed_methods'];
+            $allowed[strtolower($method['allowed_methods'])] = strtolower($method['allowed_methods']);
         }
 
         $arr = array();
@@ -141,7 +147,7 @@ class Rate extends \Magento\Shipping\Model\Carrier\AbstractCarrier
     public function requestToShipment($request)
     {
         // No error is returned as it is an asynchron process with yellowcube
-        Mage::getSingleton('swisspost_yellowcube/synchronizer')->ship($request);
+        $this->synchronizer->ship($request);
 
         return $this->dataObjectFactory->create();
     }

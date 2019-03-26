@@ -2,8 +2,10 @@
 
 namespace Swisspost\YellowCube\Helper;
 
+use function is_string;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\ScopeInterface;
 
 /**
@@ -11,21 +13,20 @@ use Magento\Store\Model\ScopeInterface;
  */
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const CONFIG_SENDER_ID = 'yellowcube/general/sender_id';
-    const CONFIG_CUSTOM_ENDPOINT = 'yellowcube/general/custom_url';
-    const CONFIG_ENDPOINT = 'yellowcube/general/soap_url';
-    const CONFIG_PARTNER_NUMBER = 'yellowcube/general/partner_number';
-    const CONFIG_DEPOSITOR_NUMBER = 'yellowcube/general/depositor_number';
-    const CONFIG_PLANT_ID = 'yellowcube/general/plant_id';
-    const CONFIG_CERT_PATH = 'yellowcube/general/certificate_path';
-    const CONFIG_CERT_PASSWORD = 'yellowcube/general/certificate_password';
-    const CONFIG_TARA_FACTOR = 'yellowcube/general/tara_factor';
-    const CONFIG_OPERATION_MODE = 'yellowcube/general/operation_mode';
-    const CONFIG_DEBUG = 'yellowcube/general/debug';
-    const CONFIG_SHIPPING_ADDITIONAL = 'yellowcube/general/additional_methods';
-    const DEFAULT_ENDPOINTS = 'yellowcube/default_endpoints';
-
-    const YC_LOG_FILE = 'yellowcube.log';
+    const CONFIG_SENDER_ID = 'carriers/yellowcube/sender_id';
+    const CONFIG_CUSTOM_ENDPOINT = 'carriers/yellowcube/custom_url';
+    const CONFIG_ENDPOINT = 'carriers/yellowcube/soap_url';
+    const CONFIG_PARTNER_NUMBER = 'carriers/yellowcube/partner_number';
+    const CONFIG_DEPOSITOR_NUMBER = 'carriers/yellowcube/depositor_number';
+    const CONFIG_PLANT_ID = 'carriers/yellowcube/plant_id';
+    const CONFIG_CERT_PATH = 'carriers/yellowcube/certificate_path';
+    const CONFIG_CERT_PASSWORD = 'carriers/yellowcube/certificate_password';
+    const CONFIG_TARA_FACTOR = 'carriers/yellowcube/tara_factor';
+    const CONFIG_OPERATION_MODE = 'carriers/yellowcube/operation_mode';
+    const CONFIG_DEBUG = 'carriers/yellowcube/debug';
+    const CONFIG_ALLOWED_METHODS = 'carriers/yellowcube/allowed_methods';
+    const CONFIG_SHIPPING_ADDITIONAL = 'carriers/yellowcube/additional_methods';
+    const DEFAULT_ENDPOINTS = 'carriers/yellowcube/default_endpoints';
 
     const PARTNER_TYPE = 'WE';
 
@@ -35,15 +36,21 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $encrypter;
 
     /**
+     * @var \Magento\Framework\Serialize\Serializer\Json
+     */
+    protected $jsonSerializer;
+
+    /**
      * Data constructor.
      *
      * @param Context $context
      * @param EncryptorInterface $encryptor
      */
-    public function __construct(Context $context, EncryptorInterface $encryptor)
+    public function __construct(Context $context, EncryptorInterface $encryptor, Json $jsonSerializer)
     {
         parent::__construct($context);
         $this->encrypter = $encryptor;
+        $this->jsonSerializer = $jsonSerializer;
     }
 
     /**
@@ -179,15 +186,28 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
+     * Get debug mode
+     *
+     * @param null|string|bool|int|\Magento\Store\Model\Store $storeId
+     * @return bool
+     */
+    public function getAllowedMethods($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
+    {
+        $allowed_methods = $this->getConfigValue(self::CONFIG_ALLOWED_METHODS, $storeId, true);
+        if (is_string($allowed_methods)) {
+            $allowed_methods = $this->jsonSerializer->unserialize($allowed_methods);
+        }
+        return $allowed_methods;
+    }
+
+    /**
      * @param $field
      * @param null $storeId
      * @return mixed
      */
     public function getConfigValue($field, $storeId = null)
     {
-        return $this->scopeConfig->getValue(
-            $field, ScopeInterface::SCOPE_STORE, $storeId
-        );
+        return $this->scopeConfig->getValue($field, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
     /**
@@ -220,7 +240,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getMethods()
     {
-        return (array)$this->scopeConfig->getValue('yellowcube/methods');
+        return (array)$this->scopeConfig->getValue('carriers/yellowcube/methods');
     }
 
     /**
@@ -231,7 +251,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getEanTypes()
     {
-        return (array)$this->scopeConfig->getValue('yellowcube/ean/type');
+        return (array)$this->scopeConfig->getValue('carriers/yellowcube/ean/type');
     }
 
     /**

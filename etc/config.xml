@@ -1,176 +1,177 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
-        <yellowcube>
-            <general>
+        <carriers>
+            <yellowcube>
                 <active>0</active>
-                <model>swisspost_yellowcube/shipping_carrier_rate</model>
+                <model>Swisspost\YellowCube\Model\Shipping\Carrier\Carrier</model>
                 <title>SwissPost YellowCube</title>
                 <tara_factor>0.95</tara_factor>
                 <operation_mode>T</operation_mode>
-            </general>
-            <default_endpoints>
-                <production>https://service.swisspost.ch/apache/yellowcube/?wsdl</production>
-                <test>https://service-test.swisspost.ch/apache/yellowcube-int/?wsdl</test>
-                <development>https://service-test.swisspost.ch/apache/yellowcube-test/?wsdl</development>
-            </default_endpoints>
-            <dimension>
-                <uom>
-                    <mtr translate="label">
-                        <label>Metre</label>
-                    </mtr>
-                    <cmt translate="label">
-                        <label>Centimetre</label>
-                    </cmt>
-                </uom>
-            </dimension>
-            <ean>
-                <type>
-                    <he translate="label">
-                        <label>HE</label>
-                    </he>
-                    <hk translate="label">
-                        <label>HK</label>
-                    </hk>
-                    <i6 translate="label">
-                        <label>I6</label>
-                    </i6>
-                    <ic translate="label">
-                        <label>IC</label>
-                    </ic>
-                    <ie translate="label">
-                        <label>IE</label>
-                    </ie>
-                    <ik translate="label">
-                        <label>IK</label>
-                    </ik>
-                    <uc translate="label">
-                        <label>UC</label>
-                    </uc>
-                </type>
-            </ean>
-            <methods>
-                <eco translate="label">
-                    <label>PostPac Economy</label>
-                    <code>ECO</code>
-                </eco>
-                <eco_si translate="label">
-                    <label>PostPac Economy with Signature</label>
-                    <code>ECO SI</code>
-                    <real_code>ECO</real_code>
-                    <additional>SI</additional>
-                </eco_si>
-                <pri translate="label">
-                    <label>PostPac Priority</label>
-                    <code>PRI</code>
-                </pri>
-                <pri_si translate="label">
-                    <label>PostPac Priority with Signature</label>
-                    <code>PRI SI</code>
-                    <real_code>PRI</real_code>
-                    <additional>SI</additional>
-                </pri_si>
-                <pri_si_azs translate="label">
-                    <label>PostPac Priority with Signature &amp; Evening delivery</label>
-                    <code>PRI SIAZS</code>
-                    <real_code>PRI</real_code>
-                    <additional>SI;AZS</additional>
-                </pri_si_azs>
-                <pri_si_sa translate="label">
-                    <label>PostPac Priority with Signature &amp; Saturday delivery</label>
-                    <code>PRI SISA</code>
-                    <real_code>PRI</real_code>
-                    <additional>SI;SA</additional>
-                </pri_si_sa>
-                <pickup translate="label">
-                    <label>Pickup in Oftringen</label>
-                    <code>PICKUP</code>
-                </pickup>
-                <pickup_apost translate="label">
-                    <label>Pickup A-POST</label>
-                    <code>PICKUP APOST</code>
-                    <real_code>PICKUP</real_code>
-                    <additional>APOST</additional>
-                </pickup_apost>
-                <aplus translate="label">
-                    <label>A-POST PLUS</label>
-                    <code>APLUS</code>
-                </aplus>
-                <pickup_intpri_gr translate="label">
-                    <label>Pickup International Priority Gross</label>
-                    <code>PICKUP INTPRIGR</code>
-                    <real_code>PICKUP</real_code>
-                    <additional>INTPRI;GR</additional>
-                </pickup_intpri_gr>
-                <pickup_intpri_mx translate="label">
-                    <label>Pickup International Priority Maxi</label>
-                    <code>PICKUP INTPRIMX</code>
-                    <real_code>PICKUP</real_code>
-                    <additional>INTPRI;MX</additional>
-                </pickup_intpri_mx>
-                <pickup_eco_gr translate="label">
-                    <label>Pickup International Priority Gross</label>
-                    <code>PICKUP INTECOGR</code>
-                    <real_code>PICKUP</real_code>
-                    <additional>INTECO;GR</additional>
-                </pickup_eco_gr>
-                <pickup_eco_mx translate="label">
-                    <label>Pickup International Eco Maxi</label>
-                    <code>PICKUP INTECOGR</code>
-                    <real_code>PICKUP</real_code>
-                    <additional>INTECO;MX</additional>
-                </pickup_eco_mx>
+                <default_endpoints>
+                    <production>https://service.swisspost.ch/apache/yellowcube/?wsdl</production>
+                    <test>https://service-test.swisspost.ch/apache/yellowcube-int/?wsdl</test>
+                    <development>https://service-test.swisspost.ch/apache/yellowcube-test/?wsdl</development>
+                </default_endpoints>
+                <dimension>
+                    <uom>
+                        <mtr translate="label">
+                            <label>Metre</label>
+                        </mtr>
+                        <cmt translate="label">
+                            <label>Centimetre</label>
+                        </cmt>
+                    </uom>
+                </dimension>
+                <ean>
+                    <type>
+                        <he translate="label">
+                            <label>HE</label>
+                        </he>
+                        <hk translate="label">
+                            <label>HK</label>
+                        </hk>
+                        <i6 translate="label">
+                            <label>I6</label>
+                        </i6>
+                        <ic translate="label">
+                            <label>IC</label>
+                        </ic>
+                        <ie translate="label">
+                            <label>IE</label>
+                        </ie>
+                        <ik translate="label">
+                            <label>IK</label>
+                        </ik>
+                        <uc translate="label">
+                            <label>UC</label>
+                        </uc>
+                    </type>
+                </ean>
+                <methods>
+                    <eco translate="label">
+                        <label>PostPac Economy</label>
+                        <code>ECO</code>
+                    </eco>
+                    <eco_si translate="label">
+                        <label>PostPac Economy with Signature</label>
+                        <code>ECO SI</code>
+                        <real_code>ECO</real_code>
+                        <additional>SI</additional>
+                    </eco_si>
+                    <pri translate="label">
+                        <label>PostPac Priority</label>
+                        <code>PRI</code>
+                    </pri>
+                    <pri_si translate="label">
+                        <label>PostPac Priority with Signature</label>
+                        <code>PRI SI</code>
+                        <real_code>PRI</real_code>
+                        <additional>SI</additional>
+                    </pri_si>
+                    <pri_si_azs translate="label">
+                        <label>PostPac Priority with Signature &amp; Evening delivery</label>
+                        <code>PRI SIAZS</code>
+                        <real_code>PRI</real_code>
+                        <additional>SI;AZS</additional>
+                    </pri_si_azs>
+                    <pri_si_sa translate="label">
+                        <label>PostPac Priority with Signature &amp; Saturday delivery</label>
+                        <code>PRI SISA</code>
+                        <real_code>PRI</real_code>
+                        <additional>SI;SA</additional>
+                    </pri_si_sa>
+                    <pickup translate="label">
+                        <label>Pickup in Oftringen</label>
+                        <code>PICKUP</code>
+                    </pickup>
+                    <pickup_apost translate="label">
+                        <label>Pickup A-POST</label>
+                        <code>PICKUP APOST</code>
+                        <real_code>PICKUP</real_code>
+                        <additional>APOST</additional>
+                    </pickup_apost>
+                    <aplus translate="label">
+                        <label>A-POST PLUS</label>
+                        <code>APLUS</code>
+                    </aplus>
+                    <pickup_intpri_gr translate="label">
+                        <label>Pickup International Priority Gross</label>
+                        <code>PICKUP INTPRIGR</code>
+                        <real_code>PICKUP</real_code>
+                        <additional>INTPRI;GR</additional>
+                    </pickup_intpri_gr>
+                    <pickup_intpri_mx translate="label">
+                        <label>Pickup International Priority Maxi</label>
+                        <code>PICKUP INTPRIMX</code>
+                        <real_code>PICKUP</real_code>
+                        <additional>INTPRI;MX</additional>
+                    </pickup_intpri_mx>
+                    <pickup_eco_gr translate="label">
+                        <label>Pickup International Priority Gross</label>
+                        <code>PICKUP INTECOGR</code>
+                        <real_code>PICKUP</real_code>
+                        <additional>INTECO;GR</additional>
+                    </pickup_eco_gr>
+                    <pickup_eco_mx translate="label">
+                        <label>Pickup International Eco Maxi</label>
+                        <code>PICKUP INTECOGR</code>
+                        <real_code>PICKUP</real_code>
+                        <additional>INTECO;MX</additional>
+                    </pickup_eco_mx>
 
-                <sp_eco translate="label">
-                    <label>Bulky goods PostPac Economy</label>
-                    <code>SP ECO</code>
-                </sp_eco>
-                <sp_pri translate="label">
-                    <label>Bulky goods PostPac Priority</label>
-                    <code>SP PRI</code>
-                </sp_pri>
-                <ppr translate="label">
-                    <label>PostPac Promo</label>
-                    <code>PPR</code>
-                </ppr>
-                <sem translate="label">
-                    <label>Swiss-Express Mond</label>
-                    <code>SEM</code>
-                </sem>
-                <sp_sem translate="label">
-                    <label>Bulky goods Swiss-Express Mond</label>
-                    <code>SP SEM</code>
-                </sp_sem>
-                <skb translate="label">
-                    <label>Swiss-Kurier Blitz</label>
-                    <code>SKB</code>
-                </skb>
-                <sp_skb translate="label">
-                    <label>Bulky goods Swiss-Kurier Blitz</label>
-                    <code>SP SKB</code>
-                </sp_skb>
-                <vl translate="label">
-                    <label>Vinolog</label>
-                    <code>VL</code>
-                </vl>
-                <retoure translate="label">
-                    <label>Return Shipment</label>
-                    <code>RETOURE</code>
-                </retoure>
-                <lkw_eco translate="label">
-                    <label>Flight/bulky goods Economy</label>
-                    <code>LKW ECO</code>
-                </lkw_eco>
-                <lkw_prio translate="label">
-                    <label>Flight/small consignments Priority</label>
-                    <code>LKW PRIO</code>
-                </lkw_prio>
-                <lkw_express translate="label">
-                    <label>Flight/small consignments Express</label>
-                    <code>LKW EXPRESS</code>
-                </lkw_express>
-            </methods>
-        </yellowcube>
+                    <sp_eco translate="label">
+                        <label>Bulky goods PostPac Economy</label>
+                        <code>SP ECO</code>
+                    </sp_eco>
+                    <sp_pri translate="label">
+                        <label>Bulky goods PostPac Priority</label>
+                        <code>SP PRI</code>
+                    </sp_pri>
+                    <ppr translate="label">
+                        <label>PostPac Promo</label>
+                        <code>PPR</code>
+                    </ppr>
+                    <sem translate="label">
+                        <label>Swiss-Express Mond</label>
+                        <code>SEM</code>
+                    </sem>
+                    <sp_sem translate="label">
+                        <label>Bulky goods Swiss-Express Mond</label>
+                        <code>SP SEM</code>
+                    </sp_sem>
+                    <skb translate="label">
+                        <label>Swiss-Kurier Blitz</label>
+                        <code>SKB</code>
+                    </skb>
+                    <sp_skb translate="label">
+                        <label>Bulky goods Swiss-Kurier Blitz</label>
+                        <code>SP SKB</code>
+                    </sp_skb>
+                    <vl translate="label">
+                        <label>Vinolog</label>
+                        <code>VL</code>
+                    </vl>
+                    <retoure translate="label">
+                        <label>Return Shipment</label>
+                        <code>RETOURE</code>
+                    </retoure>
+                    <lkw_eco translate="label">
+                        <label>Flight/bulky goods Economy</label>
+                        <code>LKW ECO</code>
+                    </lkw_eco>
+                    <lkw_prio translate="label">
+                        <label>Flight/small consignments Priority</label>
+                        <code>LKW PRIO</code>
+                    </lkw_prio>
+                    <lkw_express translate="label">
+                        <label>Flight/small consignments Express</label>
+                        <code>LKW EXPRESS</code>
+                    </lkw_express>
+                </methods>
+            </yellowcube>
+        </carriers>
         <system>
             <messages>
                 <notification_email_template>system_admin_notification_email_template</notification_email_template>

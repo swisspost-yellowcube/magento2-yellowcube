@@ -62,12 +62,12 @@ class War
 
                     try {
                         foreach ($customerOrderDetails as $customerOrderDetail) {
-                            $this->logger->log(\Monolog\Logger::DEBUG, 'Debug $customerOrderDetail '.print_r($customerOrderDetail,true));
+                            $this->logger->debug('Debug $customerOrderDetail '.print_r($customerOrderDetail,true));
 
                             reset($shipmentItems);
                             foreach ($shipmentItems as $item) {
 
-                                $this->logger->log(\Monolog\Logger::DEBUG, 'Debug $item '.print_r($item,true));
+                                $this->logger->debug('Debug $item '.print_r($item,true));
 
                                 /* @var $item Mage_Sales_Model_Order_Shipment_Item */
                                 if ($customerOrderDetail->getArticleNo() == $item->getSku() && !isset($hash[$item->getId()])) {
@@ -84,7 +84,7 @@ class War
                         $this->logger->critical($e);
                     }
 
-                    $this->logger->log(\Monolog\Logger::DEBUG, __('Items for shipment %s considered as shipped',$shipment->getIncrementId()));
+                    $this->logger->debug(__('Items for shipment %s considered as shipped',$shipment->getIncrementId()));
 
                     // shipping number contains a semicolon, post api supports multiple values
                     $shippingUrl = 'http://www.post.ch/swisspost-tracking?formattedParcelCodes=' . $shipmentNo;
@@ -107,12 +107,12 @@ class War
 
                     $shipment->sendEmail(true, $message);
 
-                    $this->logger->log(\Monolog\Logger::DEBUG, __('Shipment %s comment added and email sent',$shipment->getIncrementId()));
+                    $this->logger->debug(__('Shipment %s comment added and email sent',$shipment->getIncrementId()));
                 }
             }
 
-            if ($this->getHelper()) {
-                $this->logger->log(\Monolog\Logger::DEBUG, print_r($goodsIssueList,true));
+            if ($this->dataHelper->getDebug()) {
+                $this->logger->debug(print_r($goodsIssueList,true));
             }
         } catch (Exception $e) {
             // Let's keep going further processes

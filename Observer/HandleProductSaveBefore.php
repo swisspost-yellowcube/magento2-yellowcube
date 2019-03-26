@@ -72,7 +72,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
             $sync = $this->dataHelper->isConfigured(/* $storeId */);
         }
 
-        if (!$is_configured && (bool)sync) {
+        if (!$is_configured && (bool)$sync) {
             throw new LocalizedException(__('Please, configure YellowCube before to save the product having YellowCube option enabled.'));
         } else {
             if (!$is_configured) {

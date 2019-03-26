@@ -45,16 +45,18 @@ class InstallData implements InstallDataInterface
                 'class' => '',
                 'source' => Boolean::class,
                 'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
-                'visible' => true,
-                'required' => true,
+                'visible' => false,
+                'required' => false,
                 'user_defined' => true,
                 'searchable' => false,
-                'filterable' => true,
+                'filterable' => false,
                 'comparable' => false,
                 'visible_on_front' => false,
-                'used_in_product_listing' => true,
+                'used_in_product_listing' => false,
+                'is_used_in_grid' => true,
+                'is_filterable_in_grid' => true,
                 'unique' => false,
-                'apply_to' => 'simple,configurable,virtual',
+                'apply_to' => 'simple',
                 'default' => Boolean::VALUE_NO
             ]
         );
@@ -81,7 +83,7 @@ class InstallData implements InstallDataInterface
                 'visible_on_front' => false,
                 'used_in_product_listing' => true,
                 'unique' => false,
-                'apply_to' => 'simple,configurable,virtual',
+                'apply_to' => 'simple',
             ]
         );
 
@@ -108,7 +110,7 @@ class InstallData implements InstallDataInterface
                 'visible_on_front' => false,
                 'used_in_product_listing' => true,
                 'unique' => false,
-                'apply_to' => 'simple,configurable,virtual',
+                'apply_to' => 'simple',
             ]
         );
 

@@ -2,12 +2,8 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
-        <section id="yellowcube" translate="label" type="text" sortOrder="1150" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>SwissPost YellowCube</label>
-            <tab>service</tab>
-            <resource>Magento_Integration::config_oauth</resource>
-            <group id="general" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1"
-                   translate="label">
+        <section id="carriers" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+            <group id="yellowcube" translate="label" type="text" sortOrder="0" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>SwissPost YellowCube</label>
                 <field id="active" translate="label" sortOrder="10" type="select" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enabled for Checkout</label>

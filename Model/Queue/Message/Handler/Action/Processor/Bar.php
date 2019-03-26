@@ -58,7 +58,6 @@ class Bar
      */
     public function process(array $data)
     {
-        $this->logger->emergency('hi');
         $stockItems = $this->getYellowCubeService()->getInventory();
 
         $this->logger->info(__('YellowCube reports %d products with a stock level', count($stockItems)));
