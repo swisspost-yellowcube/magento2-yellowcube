@@ -2,6 +2,7 @@
 
 namespace Swisspost\YellowCube\Model\Shipping\Carrier;
 
+use Magento\Framework\Xml\Security;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Shipment\Request;
 use Swisspost\YellowCube\Helper\Data;
@@ -107,7 +108,7 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier
         $allowedMethods = $this->dataHelper->getAllowedMethods();
 
         foreach ($allowedMethods as $method) {
-            if (strtolower($method['allowed_methods']) == $code) {
+            if ($method['allowed_methods'] == $code) {
                 return $method['price'];
             }
         }
@@ -121,23 +122,16 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier
      */
     public function getAllowedMethods()
     {
-        $methods = $this->dataHelper->getMethods();
-        $allowedMethods = $this->dataHelper->getAllowedMethods();
+        $allowedMethods = array_column($this->dataHelper->getAllowedMethods(), 'allowed_methods');
 
-        $allowed = array();
-        foreach ($allowedMethods as $method) {
-            $allowed[strtolower($method['allowed_methods'])] = strtolower($method['allowed_methods']);
-        }
-
-        $arr = array();
-        foreach ($methods as $key => $method) {
+        $methods = array();
+        foreach ($this->dataHelper->getMethods() as $method) {
             /* @var $method Mage_Core_Model_Config_Element */
-            if (array_key_exists($key, $allowed)) {
-                $arr[$key] = $methods[$key];
+            if (in_array($method['code'], $allowedMethods)) {
+                $methods[$method['code']] = $method['label'];
             }
         };
-
-        return $arr;
+        return $methods;
     }
 
     /**

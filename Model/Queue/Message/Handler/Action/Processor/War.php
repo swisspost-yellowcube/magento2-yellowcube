@@ -5,9 +5,7 @@ namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 
-class War
-  extends ProcessorAbstract
-  implements ProcessorInterface
+class War extends ProcessorAbstract implements ProcessorInterface
 {
 
     /**
@@ -58,21 +56,20 @@ class War
                      */
                     $customerOrderDetails = $goodsIssue->getCustomerOrderList();
                     $shipmentItems = $shipment->getItemsCollection();
-                    $hash = array();
+                    $hash = [];
 
                     try {
                         foreach ($customerOrderDetails as $customerOrderDetail) {
-                            $this->logger->debug('Debug $customerOrderDetail '.print_r($customerOrderDetail,true));
+                            $this->logger->debug('Debug $customerOrderDetail ' . print_r($customerOrderDetail, true));
 
                             reset($shipmentItems);
                             foreach ($shipmentItems as $item) {
-
-                                $this->logger->debug('Debug $item '.print_r($item,true));
+                                $this->logger->debug('Debug $item ' . print_r($item, true));
 
                                 /* @var $item Mage_Sales_Model_Order_Shipment_Item */
                                 if ($customerOrderDetail->getArticleNo() == $item->getSku() && !isset($hash[$item->getId()])) {
                                     $item
-                                        ->setAdditionalData(\Zend_Json::encode(array('yc_shipped' => 1)))
+                                        ->setAdditionalData(\Zend_Json::encode(['yc_shipped' => 1]))
                                         ->save();
                                     $hash[$item->getId()] = true;
                                 }
@@ -80,11 +77,11 @@ class War
                             $lotId = $customerOrderDetail->getLot();
                             $quantityUOM = $customerOrderDetail->getQuantityUOM();
                         }
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         $this->logger->critical($e);
                     }
 
-                    $this->logger->debug(__('Items for shipment %s considered as shipped',$shipment->getIncrementId()));
+                    $this->logger->debug(__('Items for shipment %s considered as shipped', $shipment->getIncrementId()));
 
                     // shipping number contains a semicolon, post api supports multiple values
                     $shippingUrl = 'http://www.post.ch/swisspost-tracking?formattedParcelCodes=' . $shipmentNo;
@@ -107,14 +104,14 @@ class War
 
                     $shipment->sendEmail(true, $message);
 
-                    $this->logger->debug(__('Shipment %s comment added and email sent',$shipment->getIncrementId()));
+                    $this->logger->debug(__('Shipment %s comment added and email sent', $shipment->getIncrementId()));
                 }
             }
 
             if ($this->dataHelper->getDebug()) {
-                $this->logger->debug(print_r($goodsIssueList,true));
+                $this->logger->debug(print_r($goodsIssueList, true));
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Let's keep going further processes
             $this->logger->critical($e);
         }

@@ -19,7 +19,7 @@
         <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\HandleProductDelete"/>
     </event>
     <event name="sales_order_shipment_save_before">
-        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\handleShipmentSaveBefore"/>
+        <observer name="catalog_product_yellowcube_sync" instance="Swisspost\YellowCube\Observer\HandleShipmentSaveBefore"/>
     </event>
     <event name="catalog_model_product_duplicate">
         <observer name="catalog_product_duplicate_yellowcube" instance="Swisspost\YellowCube\Observer\handleProductDuplicate"/>

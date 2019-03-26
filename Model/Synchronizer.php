@@ -2,23 +2,18 @@
 
 namespace Swisspost\YellowCube\Model;
 
-use Magento\Framework\Json\Encoder;
 use Magento\Framework\Serialize\Serializer\Json;
 use Swisspost\YellowCube\Helper\Data;
-use Swisspost\YellowCube\Helper\FormatHelper;
-use Swisspost\YellowCube\Model\Dimension\Uom\Attribute\Source;
 
 class Synchronizer
 {
-    use FormatHelper;
-
-    const SYNC_ACTION_INSERT                = 'insert';
-    const SYNC_ACTION_UPDATE                = 'update';
-    const SYNC_ACTION_DEACTIVATE            = 'deactivate';
-    const SYNC_ORDER_WAB                    = 'order_wab';
-    const SYNC_ORDER_UPDATE                 = 'order_update';
-    const SYNC_INVENTORY                    = 'bar';
-    const SYNC_WAR                          = 'war';
+    const SYNC_ACTION_INSERT                = 'Insert';
+    const SYNC_ACTION_UPDATE                = 'Update';
+    const SYNC_ACTION_DEACTIVATE            = 'Deactivate';
+    const SYNC_ORDER_WAB                    = 'OrderWab';
+    const SYNC_ORDER_UPDATE                 = 'OrderUpdate';
+    const SYNC_INVENTORY                    = 'Bar';
+    const SYNC_WAR                          = 'War';
 
     /**
      * @var \Zend_Queue
@@ -112,7 +107,7 @@ class Synchronizer
     {
         /** @var \Magento\Catalog\Model\ResourceModel\Product\Collection $collection */
         $collection = $this->catalogResourceModelProductCollectionFactory->create();
-        $collection->addAttributeToSelect(array(
+        $collection->addAttributeToSelect([
             'name',
             'weight',
             'yc_sync_with_yellowcube',
@@ -123,7 +118,7 @@ class Synchronizer
             'yc_ean_type',
             'yc_ean_code',
 
-        ));
+        ]);
         $collection->addFieldToFilter('yc_sync_with_yellowcube', 1);
 
         foreach ($collection as $product) {
@@ -159,57 +154,55 @@ class Synchronizer
      */
     public function ship(\Magento\Shipping\Model\Shipment\Request $request)
     {
-        $order = $request->getOrderShipment();
-        $realOrder = $order->getOrder();
-        $helper = Mage::helper('swisspost_yellowcube');
+        $shipment = $request->getOrderShipment();
+        $order = $shipment->getOrder();
 
-        $locale = $this->scopeConfig->getValue('general/locale/code', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $request->getStoreId());
+        $locale = $this->dataHelper->getConfigValue('general/locale/code', $request->getStoreId());
         $locale = explode('_', $locale);
 
-        $positionItems = array();
-        foreach ($order->getAllItems() as $item) {
+        $positionItems = [];
+        foreach ($shipment->getAllItems() as $item) {
             $product = $this->catalogProductFactory->create()->load($item->getProductId());
-            $positionItems[] = array(
+            $positionItems[] = [
                 'article_id' => $item->getProductId(),
                 'article_number' => $item->getSku(),
                 'article_ean' => $product->getData('yc_ean_code'),
                 'article_title' => $item->getName(),
                 'article_qty' => $item->getQty(),
-            );
+            ];
         }
 
         $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
             'action'    => self::SYNC_ORDER_WAB,
-            'store_id'  => $request->getStoreId(),
-            'plant_id'  => $this->dataHelper->getPlantId($request->getStoreId()),
+            'store_id'  => $shipment->getStoreId(),
+            'plant_id'  => $this->dataHelper->getPlantId($shipment->getStoreId()),
 
             // Order Header
-            'deposit_number'    => $this->dataHelper->getDepositorNumber($request->getStoreId()),
-            'order_id'          => $order->getOrderId(),
-            'order_increment_id' => $realOrder->getIncrementId(),
+            'deposit_number'    => $this->dataHelper->getDepositorNumber($shipment->getStoreId()),
+            'order_id'             => $shipment->getOrderId(),
             'order_date'        => date('Ymd'),
 
             // Partner Address
-            'partner_type'          => Swisspost_YellowCube_Helper_Data::PARTNER_TYPE,
-            'partner_number'        => $this->dataHelper->getPartnerNumber($request->getStoreId()),
+            'partner_type'          => Data::PARTNER_TYPE,
+            'partner_number'        => $this->dataHelper->getPartnerNumber($shipment->getStoreId()),
             'partner_reference'     => $this->dataHelper->getPartnerReference(
-                $request->getRecipientContactPersonName(),
-                $request->getRecipientAddressPostalCode()
+                $shipment->getShippingAddress()->getName(),
+                $shipment->getShippingAddress()->getPostcode()
             ),
-            'partner_name'          => $request->getRecipientContactPersonName(),
-            'partner_name2'         => $request->getRecipientContactCompanyName(),
-            'partner_street'        => $request->getRecipientAddressStreet1(),
-            'partner_name3'         => $request->getRecipientAddressStreet2(),
-            'partner_country_code'  => $request->getRecipientAddressCountryCode(),
-            'partner_city'          => $request->getRecipientAddressCity(),
-            'partner_zip_code'      => $request->getRecipientAddressPostalCode(),
-            'partner_phone'         => $request->getRecipientContactPhoneNumber(),
-            'partner_email'         => $request->getRecipientEmail(),
+            'partner_name'          => $shipment->getShippingAddress()->getName(),
+            'partner_name2'         => $shipment->getShippingAddress()->getCompany(),
+            'partner_street'        => $shipment->getShippingAddress()->getStreetLine(1),
+            'partner_name3'         => $shipment->getShippingAddress()->getStreetLine(2),
+            'partner_country_code'  => $shipment->getShippingAddress()->getCountryId(),
+            'partner_city'          => $shipment->getShippingAddress()->getCity(),
+            'partner_zip_code'      => $shipment->getShippingAddress()->getPostcode(),
+            'partner_phone'         => $shipment->getShippingAddress()->getTelephone(),
+            'partner_email'         => $shipment->getShippingAddress()->getEmail(),
             'partner_language'      => $locale[0], // possible values expected de|fr|it|en ...
 
             // ValueAddedServices - AdditionalService
-            'service_basic_shipping'      => $helper->getRealCode($request->getShippingMethod()),
-            'service_additional_shipping' => $helper->getAdditionalShipping($request->getShippingMethod()),
+            'service_basic_shipping'      => $this->dataHelper->getRealCode(str_replace('yellowcube_', '', $order->getShippingMethod())),
+            'service_additional_shipping' => $this->dataHelper->getAdditionalShipping(str_replace('yellowcube_', '', $order->getShippingMethod())),
 
             // Order Positions
             'items' => $positionItems

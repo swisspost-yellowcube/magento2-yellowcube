@@ -2,7 +2,6 @@
 
 namespace Swisspost\YellowCube\Model\Sales\Order\Pdf;
 
-
 class Shipment
 {
     protected $_pdfStylesTemplatePath = 'styles.html';

@@ -289,7 +289,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
                 break;
             }
         }
-        return '';
+        return 'NONE';
     }
 
     /**

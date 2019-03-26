@@ -109,15 +109,6 @@ class Observer
      */
     public function handleShipmentSaveBefore(\Magento\Framework\Event\Observer $observer)
     {
-        /* @var $shipment Mage_Sales_Model_Order_Shipment */
-        $shipment = $observer->getShipment();
-        $carrier = $shipment->getOrder()->getShippingCarrier();
-
-        if ($carrier instanceof Rate && $shipment->getOrder()->getIsInProcess()) {
-            $this->shippingShippingFactory->create()->requestToShipment($shipment);
-        }
-
-        return $this;
     }
 
     /**

@@ -2,9 +2,7 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action;
 
-use Magento\Framework\Serialize\Serializer\Json;
 use Swisspost\YellowCube\Helper\Data;
-use Swisspost\YellowCube\Helper\FormatHelper;
 
 abstract class ProcessorAbstract implements ProcessorInterface
 {
@@ -26,7 +24,7 @@ abstract class ProcessorAbstract implements ProcessorInterface
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
-        Data $dataHelper,
+        \Swisspost\YellowCube\Helper\Data $dataHelper,
         \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory
     ) {
         $this->logger = $logger;
@@ -35,7 +33,7 @@ abstract class ProcessorAbstract implements ProcessorInterface
     }
 
     /**
-     * @return \\YellowCube\Service
+     * @return \YellowCube\Service
      */
     public function getYellowCubeService()
     {
@@ -89,8 +87,9 @@ abstract class ProcessorAbstract implements ProcessorInterface
             if ($value == $elem) {
                 return true;
             } elseif (is_array($value)) {
-                if ($this->inMultiArray($elem, $value))
+                if ($this->inMultiArray($elem, $value)) {
                     return true;
+                }
             }
         }
 
