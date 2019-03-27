@@ -28,6 +28,24 @@ The store locale must be set to a locale supported by YellowCube (DE/FR/IT/EN-GB
 - `composer require swisspost-yellowcube/magento2-yellowcube`
 - `./bin/magento module:enable Swisspost_YellowCube`
 
+To add the Patch for MysqlMq:
+
+```
+composer require cweagans/composer-patches
+
+# Add inside extra:
+
+        "patches": {
+            "magento/module-mysql-mq": {
+                " MysqlMq: Use new MessageQueue Config interface, update unit tests #21942": "https://raw.githubusercontent.com/swisspost-yellowcube/magento2-yellowcube/master/21942.diff"
+            }
+        }
+        
+composer update --lock
+
+
+```
+
 ## Configuration
 
 In Menu `Stores > Configuration > Sales > Shipping Methods`
