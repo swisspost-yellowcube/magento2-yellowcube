@@ -67,17 +67,16 @@ class Tools extends \Magento\Framework\App\Helper\AbstractHelper
         );
     }
 
-
     /**
      * @param $message
      */
-    public static function sendAdminNotification($message)
+    public function sendAdminNotification($message)
     {
         self::sendNotification(
             $this->scopeConfig->getValue(Mage_Log_Model_Cron::XML_PATH_EMAIL_LOG_CLEAN_IDENTITY, \Magento\Store\Model\ScopeInterface::SCOPE_STORE), //  e.g. 'general'
             'support',
             $this->scopeConfig->getValue(self::XML_PATH_EMAIL_NOTIFICATION_TEMPLATE, \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
-            array('message' => $message),
+            ['message' => $message],
             $this->storeManager->getStore()->getId()
         );
     }
@@ -92,7 +91,7 @@ class Tools extends \Magento\Framework\App\Helper\AbstractHelper
      * @param int $storeId
      * @throw \Exception
      */
-    public static function sendNotification($sender = 'general', $recipient = 'customer', $template, $variables = array(), $storeId = null)
+    public function sendNotification($sender = 'general', $recipient = 'customer', $template, $variables = [], $storeId = null)
     {
         try {
             if ($recipient == 'customer') {
@@ -100,25 +99,27 @@ class Tools extends \Magento\Framework\App\Helper\AbstractHelper
                 if (is_numeric($customer)) {
                     $customer = $this->customerCustomerFactory->create()->load($customer);
                 }
-                $recipient = array('name' => $customer->getName(), 'email' => $customer->getEmail());
+                $recipient = ['name' => $customer->getName(), 'email' => $customer->getEmail()];
             } else {
-                $recipient = array(
+                $recipient = [
                     'name' => $this->scopeConfig->getValue('trans_email/ident_' . $recipient . '/name', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId),
                     'email' => $this->scopeConfig->getValue('trans_email/ident_' . $recipient . '/email', \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId)
-                );
+                ];
             }
             $translate = $this->translateInterface;
             $translate->setTranslateInline(false);
             $emailTemplate = $this->emailTemplateFactory->create();
-            $emailTemplate->setDesignConfig(array('area' => 'frontend', 'store' => $storeId))
-                ->sendTransactional($template, // xml path email template
+            $emailTemplate->setDesignConfig(['area' => 'frontend', 'store' => $storeId])
+                ->sendTransactional(
+                    $template, // xml path email template
                     $sender,
                     $recipient['email'],
                     $recipient['name'],
                     $variables,
-                    $storeId);
+                    $storeId
+                );
             $translate->setTranslateInline(true);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->logger->critical($e);
             self::sendAdminNotification($e->__toString());
         }

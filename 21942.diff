@@ -1,0 +1,222 @@
+diff --git a/Model/Driver/Bulk/Exchange.php b/Model/Driver/Bulk/Exchange.php
+index 247a44667be0..73c6a89ef0d6 100644
+--- a/Model/Driver/Bulk/Exchange.php
++++ b/Model/Driver/Bulk/Exchange.php
+@@ -6,7 +6,7 @@
+ namespace Magento\MysqlMq\Model\Driver\Bulk;
+ 
+ use Magento\Framework\MessageQueue\Bulk\ExchangeInterface;
+-use Magento\Framework\MessageQueue\ConfigInterface as MessageQueueConfig;
++use Magento\Framework\MessageQueue\Topology\ConfigInterface as MessageQueueConfig;
+ use Magento\MysqlMq\Model\QueueManagement;
+ 
+ /**
+@@ -41,7 +41,19 @@ public function __construct(MessageQueueConfig $messageQueueConfig, QueueManagem
+      */
+     public function enqueue($topic, array $envelopes)
+     {
+-        $queueNames = $this->messageQueueConfig->getQueuesByTopic($topic);
++        $queueNames = [];
++        $exchanges = $this->messageQueueConfig->getExchanges();
++        foreach ($exchanges as $exchange) {
++          // @todo Is there a more reliable way to identify MySQL exchanges?
++          if ($exchange->getConnection() == 'db') {
++            foreach ($exchange->getBindings() as $binding) {
++              // This only supports exact matching of topics.
++              if ($binding->getTopic() == $topic) {
++                $queueNames[] = $binding->getDestination();
++              }
++            }
++          }
++        }
+         $messages = array_map(
+             function ($envelope) {
+                 return $envelope->getBody();
+diff --git a/Model/Driver/Exchange.php b/Model/Driver/Exchange.php
+index b6050c6b3d0b..85e53c847f87 100644
+--- a/Model/Driver/Exchange.php
++++ b/Model/Driver/Exchange.php
+@@ -7,7 +7,7 @@
+ 
+ use Magento\Framework\MessageQueue\EnvelopeInterface;
+ use Magento\Framework\MessageQueue\ExchangeInterface;
+-use Magento\Framework\MessageQueue\ConfigInterface as MessageQueueConfig;
++use Magento\Framework\MessageQueue\Topology\ConfigInterface as MessageQueueConfig;
+ use Magento\MysqlMq\Model\QueueManagement;
+ 
+ class Exchange implements ExchangeInterface
+@@ -43,7 +43,19 @@ public function __construct(MessageQueueConfig $messageQueueConfig, QueueManagem
+      */
+     public function enqueue($topic, EnvelopeInterface $envelope)
+     {
+-        $queueNames = $this->messageQueueConfig->getQueuesByTopic($topic);
++        $queueNames = [];
++        $exchanges = $this->messageQueueConfig->getExchanges();
++        foreach ($exchanges as $exchange) {
++          // @todo Is there a more reliable way to identify MySQL exchanges?
++          if ($exchange->getConnection() == 'db') {
++            foreach ($exchange->getBindings() as $binding) {
++              // This only supports exact matching of topics.
++              if ($binding->getTopic() == $topic) {
++                $queueNames[] = $binding->getDestination();
++              }
++            }
++          }
++        }
+         $this->queueManagement->addMessageToQueues($topic, $envelope->getBody(), $queueNames);
+         return null;
+     }
+diff --git a/Setup/Recurring.php b/Setup/Recurring.php
+index db3a39bf5fbd..f6f21ae4da32 100644
+--- a/Setup/Recurring.php
++++ b/Setup/Recurring.php
+@@ -8,7 +8,7 @@
+ use Magento\Framework\Setup\InstallSchemaInterface;
+ use Magento\Framework\Setup\ModuleContextInterface;
+ use Magento\Framework\Setup\SchemaSetupInterface;
+-use Magento\Framework\MessageQueue\ConfigInterface as MessageQueueConfig;
++use Magento\Framework\MessageQueue\Topology\ConfigInterface as MessageQueueConfig;
+ 
+ /**
+  * Class Recurring
+@@ -35,10 +35,9 @@ public function install(SchemaSetupInterface $setup, ModuleContextInterface $con
+     {
+         $setup->startSetup();
+ 
+-        $binds = $this->messageQueueConfig->getBinds();
+         $queues = [];
+-        foreach ($binds as $bind) {
+-            $queues[] = $bind[MessageQueueConfig::BIND_QUEUE];
++        foreach ($this->messageQueueConfig->getQueues() as $queue) {
++          $queues[] = $queue->getName();
+         }
+         $connection = $setup->getConnection();
+         $existingQueues = $connection->fetchCol($connection->select()->from($setup->getTable('queue'), 'name'));
+diff --git a/Test/Unit/Model/Driver/Bulk/ExchangeTest.php b/Test/Unit/Model/Driver/Bulk/ExchangeTest.php
+index 452825058c9d..b7eba352ed25 100644
+--- a/Test/Unit/Model/Driver/Bulk/ExchangeTest.php
++++ b/Test/Unit/Model/Driver/Bulk/ExchangeTest.php
+@@ -12,7 +12,7 @@
+ class ExchangeTest extends \PHPUnit\Framework\TestCase
+ {
+     /**
+-     * @var \Magento\Framework\MessageQueue\ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
++     * @var \Magento\Framework\MessageQueue\Topology\ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
+      */
+     private $messageQueueConfig;
+ 
+@@ -33,7 +33,7 @@ class ExchangeTest extends \PHPUnit\Framework\TestCase
+      */
+     protected function setUp()
+     {
+-        $this->messageQueueConfig = $this->getMockBuilder(\Magento\Framework\MessageQueue\ConfigInterface::class)
++        $this->messageQueueConfig = $this->getMockBuilder(\Magento\Framework\MessageQueue\Topology\ConfigInterface::class)
+             ->disableOriginalConstructor()->getMock();
+         $this->queueManagement = $this->getMockBuilder(\Magento\MysqlMq\Model\QueueManagement::class)
+             ->disableOriginalConstructor()->getMock();
+@@ -56,10 +56,40 @@ protected function setUp()
+     public function testEnqueue()
+     {
+         $topicName = 'topic.name';
+-        $queueNames = ['queue0', 'queue1'];
++        $queueNames = ['queue0'];
++
++        $binding1 = $this->createMock(\Magento\Framework\MessageQueue\Topology\Config\ExchangeConfigItem\BindingInterface::class);
++        $binding1->expects($this->once())
++            ->method('getTopic')
++            ->willReturn($topicName);
++        $binding1->expects($this->once())
++            ->method('getDestination')
++            ->willReturn($queueNames[0]);
++
++        $binding2 = $this->createMock(\Magento\Framework\MessageQueue\Topology\Config\ExchangeConfigItem\BindingInterface::class);
++        $binding2->expects($this->once())
++            ->method('getTopic')
++            ->willReturn('different.topic');
++        $binding2->expects($this->never())
++            ->method('getDestination');
++
++        $exchange1 = $this->createMock(\Magento\Framework\MessageQueue\Topology\Config\ExchangeConfigItemInterface::class);
++        $exchange1->expects($this->once())
++            ->method('getConnection')
++            ->willReturn('db');
++        $exchange1->expects($this->once())
++            ->method('getBindings')
++            ->willReturn([$binding1, $binding2]);
++        $exchange2 = $this->createMock(\Magento\Framework\MessageQueue\Topology\Config\ExchangeConfigItemInterface::class);
++        $exchange2->expects($this->once())
++            ->method('getConnection')
++            ->willReturn('amqp');
++        $exchange2->expects($this->never())
++            ->method('getBindings');
++
+         $envelopeBody = 'serializedMessage';
+         $this->messageQueueConfig->expects($this->once())
+-            ->method('getQueuesByTopic')->with($topicName)->willReturn($queueNames);
++            ->method('getExchanges')->willReturn([$exchange1, $exchange2]);
+         $envelope = $this->getMockBuilder(\Magento\Framework\MessageQueue\EnvelopeInterface::class)
+             ->disableOriginalConstructor()->getMock();
+         $envelope->expects($this->once())->method('getBody')->willReturn($envelopeBody);
+diff --git a/Test/Unit/Setup/RecurringTest.php b/Test/Unit/Setup/RecurringTest.php
+index e2e7ad3c4c92..03ec3c82c2d1 100644
+--- a/Test/Unit/Setup/RecurringTest.php
++++ b/Test/Unit/Setup/RecurringTest.php
+@@ -24,7 +24,7 @@ class RecurringTest extends \PHPUnit\Framework\TestCase
+     private $model;
+ 
+     /**
+-     * @var \Magento\Framework\MessageQueue\ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
++     * @var \Magento\Framework\MessageQueue\Topology\ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
+      */
+     private $messageQueueConfig;
+ 
+@@ -34,7 +34,7 @@ class RecurringTest extends \PHPUnit\Framework\TestCase
+     protected function setUp()
+     {
+         $this->objectManager = new ObjectManager($this);
+-        $this->messageQueueConfig = $this->getMockBuilder(\Magento\Framework\MessageQueue\ConfigInterface::class)
++        $this->messageQueueConfig = $this->getMockBuilder(\Magento\Framework\MessageQueue\Topology\ConfigInterface::class)
+             ->getMockForAbstractClass();
+         $this->model = $this->objectManager->getObject(
+             \Magento\MysqlMq\Setup\Recurring::class,
+@@ -49,23 +49,14 @@ protected function setUp()
+      */
+     public function testInstall()
+     {
+-        $binds = [
+-            'first_bind' => [
+-                'queue' => 'queue_name_1',
+-                'exchange' => 'magento-db',
+-                'topic' => 'queue.topic.1'
+-            ],
+-            'second_bind' => [
+-                'queue' => 'queue_name_2',
+-                'exchange' => 'magento-db',
+-                'topic' => 'queue.topic.2'
+-            ],
+-            'third_bind' => [
+-                'queue' => 'queue_name_3',
+-                'exchange' => 'magento-db',
+-                'topic' => 'queue.topic.3'
+-            ]
+-        ];
++        for ($i = 1; $i <=3; $i++) {
++            $queue = $this->createMock(\Magento\Framework\MessageQueue\Topology\Config\QueueConfigItemInterface::class);
++            $queue->expects($this->once())
++                ->method('getName')
++                ->willReturn('queue_name_'. $i);
++            $queues[] = $queue;
++        }
++
+         $dbQueues = [
+             'queue_name_1',
+             'queue_name_2',
+@@ -81,7 +72,7 @@ public function testInstall()
+             ->getMockForAbstractClass();
+ 
+         $setup->expects($this->once())->method('startSetup')->willReturnSelf();
+-        $this->messageQueueConfig->expects($this->once())->method('getBinds')->willReturn($binds);
++        $this->messageQueueConfig->expects($this->once())->method('getQueues')->willReturn($queues);
+         $connection = $this->getMockBuilder(\Magento\Framework\DB\Adapter\AdapterInterface::class)
+             ->getMockForAbstractClass();
+         $setup->expects($this->once())->method('getConnection')->willReturn($connection);
