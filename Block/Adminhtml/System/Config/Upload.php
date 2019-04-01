@@ -2,6 +2,9 @@
 
 namespace Swisspost\YellowCube\Block\Adminhtml\System\Config;
 
+use Magento\Backend\Block\Widget\Button;
+use Magento\Framework\Data\Form\Element\AbstractElement;
+
 class Upload
     extends \Magento\Config\Block\System\Config\Form\Field
 {
@@ -30,7 +33,7 @@ class Upload
     {
         parent::_prepareLayout();
         if (!$this->getTemplate()) {
-            $this->setTemplate('yellowcube/system/config/synchronize.phtml');
+            $this->setTemplate('system/config/synchronize.phtml');
         }
         return $this;
     }

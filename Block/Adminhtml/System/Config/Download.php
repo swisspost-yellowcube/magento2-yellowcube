@@ -29,7 +29,7 @@ class Download extends \Magento\Config\Block\System\Config\Form\Field
     {
         parent::_prepareLayout();
         if (!$this->getTemplate()) {
-            $this->setTemplate('yellowcube/system/config/synchronize.phtml');
+            $this->setTemplate('system/config/synchronize.phtml');
         }
         return $this;
     }

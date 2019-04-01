@@ -2,13 +2,14 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
-use Swisspost\YellowCube\Helper\Data;
+use Magento\Framework\App\Scope\Source;
+use Magento\Framework\Serialize\Serializer\Json;
+use Magento\InventoryApi\Api\Data\SourceItemInterface;
+use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 
-class Bar
-    extends ProcessorAbstract
-    implements ProcessorInterface
+class Bar extends ProcessorAbstract implements ProcessorInterface
 {
 
     /**
@@ -36,6 +37,26 @@ class Bar
      */
     protected $salesResourceModelOrderShipmentItemCollectionFactory;
 
+    /**
+     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     */
+    protected $productRepository;
+
+    /**
+     * @var SourceItemsSaveInterface
+     */
+    protected $sourceItemSave;
+
+    /**
+     * @var \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory
+     */
+    protected $sourceItemFactory;
+
+    /**
+     * @var \Magento\Framework\Serialize\Serializer\Json
+     */
+    protected $jsonSerializer;
+
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         \Swisspost\YellowCube\Helper\Data $dataHelper,
@@ -43,24 +64,35 @@ class Bar
         \Magento\Catalog\Model\ProductFactory $catalogProductFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Catalog\Model\ResourceModel\Product\ActionFactory $catalogResourceModelProductActionFactory,
-        \Magento\Sales\Model\ResourceModel\Order\Shipment\Item\CollectionFactory $salesResourceModelOrderShipmentItemCollectionFactory
+        \Magento\Sales\Model\ResourceModel\Order\Shipment\Item\CollectionFactory $salesResourceModelOrderShipmentItemCollectionFactory,
+        \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+        SourceItemsSaveInterface $sourceItemsSave,
+        \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory $sourceItemFactory,
+        \Magento\Framework\Serialize\Serializer\Json $jsonSerializer
     ) {
         parent::__construct($logger, $dataHelper, $clientFactory);
         $this->catalogProductFactory = $catalogProductFactory;
         $this->storeManager = $storeManager;
+        $this->productRepository = $productRepository;
         $this->catalogResourceModelProductActionFactory = $catalogResourceModelProductActionFactory;
         $this->salesResourceModelOrderShipmentItemCollectionFactory = $salesResourceModelOrderShipmentItemCollectionFactory;
+        $this->sourceItemSave = $sourceItemsSave;
+        $this->sourceItemFactory = $sourceItemFactory;
+        $this->jsonSerializer = $jsonSerializer;
     }
 
     /**
      * @param array $data
-     * @return $this
+     *
+     * @throws \Zend_Json_Exception
      */
     public function process(array $data)
     {
         $stockItems = $this->getYellowCubeService()->getInventory();
 
-        $this->logger->info(__('YellowCube reports %d products with a stock level', count($stockItems)));
+        $this->logger->info(__('YellowCube reports %1 products with a stock level', count($stockItems)));
+
+        $lotSummary = [];
 
         /* @var $article \YellowCube\BAR\Article */
         foreach ($stockItems as $article) {
@@ -90,49 +122,44 @@ class Bar
             }
         }
 
-        foreach ($lotSummary as $articleNo => $articleData) {
-            //todo do the update here
-            $this->update($articleNo, $articleData);
+        if ($this->dataHelper->getDebug()) {
+            $this->logger->debug(print_r($lotSummary, true));
         }
 
-        $this->logger->info(print_r($lotSummary, true));
-
-        return $this;
+        foreach ($lotSummary as $articleNo => $articleData) {
+            $this->update($articleNo, $articleData);
+        }
     }
 
     /**
-     * @param $productId
-     * @param $data
-     * @return $this
+     * Update a product.
+     *
+     * @param string $sku
+     *   The product SKU.
+     * @param array $data
+     *   Data to update.
+     *
+     * @throws \Zend_Json_Exception
      */
-    public function update($productId, $data)
+    public function update($sku, array $data)
     {
-        /** @var $product Mage_Catalog_Model_Product */
-        $product = $this->catalogProductFactory->create();
-        $idBySku = $product->getIdBySku($productId);
-        $productId = $idBySku ? $idBySku : $productId;
-
-        $product
-            ->setStoreId($this->storeManager->getStore(0)->getId())
-            ->load($productId);
-
-        if (!$product->getId()) {
-            $this->logger->log(\Monolog\Logger::INFO,
-                __('Product %s inventory cannot be synchronized from YellowCube into Magento because it does not exist.',
-                    $productId));
+        try {
+            $product = $this->productRepository->get($sku);
+        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+            // insert your error handling here
+            $this->logger->info(__('Product %1 inventory cannot be synchronized from YellowCube into Magento because it does not exist.', $sku));
             return $this;
         }
 
         /**
          * YellowCube lot - Handle the Lot information for the product
          */
-        if (!is_null($data['recentExpDate'])) //only do lot info if there is lot info available
-        {
+        if (!is_null($data['recentExpDate'])) { //only do lot info if there is lot info available
             $action = $this->catalogResourceModelProductActionFactory->create();
-            $action->updateAttributes(array($productId), array(
+            $action->updateAttributes([$sku], [
                 'yc_lot_info' => $data['lotInfo'],
                 'yc_most_recent_expiration_date' => $this->convertYCDate($data['recentExpDate'])
-            ), $this->storeManager->getStore(0)->getId());
+            ], $this->storeManager->getStore(0)->getId());
         }
 
         /**
@@ -142,32 +169,35 @@ class Bar
         $shipmentItemsCollection
             ->addFieldToFilter('product_id', $product->getId())
             ->addFieldToSelect('additional_data')
+            ->addFieldToSelect('order_item_id')
             ->addFieldToSelect('qty');
 
         $qtyToDecrease = 0;
-        foreach ($shipmentItemsCollection->getItems() as $shipment) {
-            $additionalData = \Zend_Json::decode($shipment->getAdditionalData());
-            if (isset($additionalData['yc_shipped']) && $additionalData['yc_shipped'] === 0) {
-                $qtyToDecrease += $shipment->getQty();
-            } else {
-                continue;
+        foreach ($shipmentItemsCollection->getItems() as $shipment_item) {
+            $order = $shipment_item->getOrderItem()->getOrder();
+            if (strpos($order->getShippingMethod(), 'yellowcube_') === 0) {
+                $additionalData = $shipment_item->getAdditionalData() ? $this->jsonSerializer->unserialize($shipment_item->getAdditionalData()) : [];
+                if (!isset($additionalData['yc_shipped']) || $additionalData['yc_shipped'] === 0) {
+                    //$qtyToDecrease += $shipment_item->getQty();
+                }
             }
         }
 
         $data['qty'] -= $qtyToDecrease;
 
-        /** @var $stockItem Mage_CatalogInventory_Model_Stock_Item */
-        $stockItem = $product->getStockItem();
-        $stockData = array_replace($stockItem->getData(), (array)$data);
-        $stockItem->setData($stockData);
-
         try {
-            if ($this->getHelper()->getDebug()) {
-                $this->logger->log(\Monolog\Logger::INFO,
-                    __('Product %s with the qty of %s will be saved..', $productId, $stockItem->getQty()));
+            if ($this->dataHelper->getDebug()) {
+                $this->logger->info(__('Product %1 with the qty of %2 will be saved.', $sku, $data['qty']));
             }
-            $stockItem->save();
-        } catch (Exception $e) {
+
+            /** @var SourceItemInterface $source_item */
+            $source_item = $this->sourceItemFactory->create();
+            $source_item->setStatus(SourceItemInterface::STATUS_IN_STOCK);
+            $source_item->setSku($sku);
+            $source_item->setQuantity($data['qty']);
+            $source_item->setSourceCode('YellowCube');
+            $this->sourceItemSave->execute([$source_item]);
+        } catch (\Exception $e) {
             $this->logger->critical($e);
         }
     }

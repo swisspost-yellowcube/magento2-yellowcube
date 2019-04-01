@@ -1,0 +1,45 @@
+<?php
+// @codingStandardsIgnoreFile
+
+/** @var \Swisspost\YellowCube\Block\Adminhtml\System\Config\Upload $block */
+?>
+<script>
+    require(['prototype'], function(){
+
+//<![CDATA[
+        function yellowCubeSynchronize() {
+            var synchronizeMessage = $('#synchronize_result');
+
+            new Ajax.Request('<?= $block->escapeJs($block->escapeUrl($block->getAjaxUrl())) ?>', {
+                onSuccess: function(response) {
+                    var result = '<?= $block->escapeJs($block->escapeHtml(__('Error during synchronization.'))) ?>';
+                    try {
+                        if (response.responseText.isJSON()) {
+                            response = response.responseText.evalJSON();
+                            result = '<?= $block->escapeJs($block->escapeHtml(__('Synchronization initialized.'))) ?>';
+                        }
+                        if (response.valid == 1) {
+                            synchronizeMessage.removeClassName('hidden').addClassName('success')
+                        } else {
+                            synchronizeMessage.removeClassName('hidden').addClassName('error')
+                        }
+                    } catch (e) {
+                        synchronizeMessage.removeClassName('hidden').addClassName('error')
+                    }
+                    synchronizeMessage.update(result);
+                }
+            });
+        }
+
+        window.yellowCubeSynchronize = yellowCubeSynchronize;
+//]]>
+
+    });
+</script>
+<div class="actions actions-yellowcube-synchronize">
+    <div id="synchronize_result" class="message-synchronize hidden"></div>
+    <button onclick="javascript:yellowCubeSynchronize(); return false;" class="action-yellowcube-synchronize" type="button" id="<?= $block->escapeHtmlAttr($block->getHtmlId()) ?>">
+        <span><?= $block->escapeHtml($block->getButtonLabel()) ?></span>
+    </button>
+</div>
+

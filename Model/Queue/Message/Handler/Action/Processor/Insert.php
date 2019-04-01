@@ -6,9 +6,7 @@ use Swisspost\YellowCube\Model\Dimension\Uom\Attribute\Source;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 
-class Insert
-    extends ProcessorAbstract
-    implements ProcessorInterface
+class Insert extends ProcessorAbstract implements ProcessorInterface
 {
     protected $_changeFlag = \YellowCube\ART\ChangeFlag::INSERT;
 
@@ -25,7 +23,7 @@ class Insert
 
         $uomq = ($uom == \YellowCube\ART\UnitsOfMeasure\ISO::MTR) ? \YellowCube\ART\UnitsOfMeasure\ISO::MTQ : \YellowCube\ART\UnitsOfMeasure\ISO::CMQ;
 
-        $article = new \YellowCube\ART\Article;
+        $article = new \YellowCube\ART\Article();
         $article
             ->setChangeFlag($this->_changeFlag)
             ->setPlantID($data['plant_id'])
@@ -33,8 +31,10 @@ class Insert
             ->setBaseUOM(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
             ->setAlternateUnitISO(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
             ->setArticleNo($this->formatSku($data['product_sku']))
-            ->setNetWeight($this->formatUom($data['product_weight'] * $data['tara_factor']),
-                \YellowCube\ART\UnitsOfMeasure\ISO::KGM)
+            ->setNetWeight(
+                $this->formatUom($data['product_weight'] * $data['tara_factor']),
+                \YellowCube\ART\UnitsOfMeasure\ISO::KGM
+            )
             ->setGrossWeight($this->formatUom($data['product_weight']), \YellowCube\ART\UnitsOfMeasure\ISO::KGM)
             ->setLength($this->formatUom($data['product_length']), $uom)
             ->setWidth($this->formatUom($data['product_width']), $uom)
@@ -44,6 +44,8 @@ class Insert
             ->setBatchMngtReq($data['product_lot_management'])
             // @todo provide the language of the current description (possible values de|fr|it|en)
             ->addArticleDescription($this->formatDescription($data['product_name']), 'de');
+
+        return;
 
         $response = $this->getYellowCubeService()->insertArticleMasterData($article);
 

@@ -54,10 +54,15 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
             $this->_methodRenderer = $this->getLayout()->createBlock(
                 Codes::class,
                 '',
-                ['is_render_to_js_template' => true]
+                [
+                    'is_render_to_js_template' => true,
+                    'data' => [
+                        'id' =>  $this->_getCellInputElementId('<%- _id %>', 'allowed_methods'),
+                    ],
+                ]
             );
             $this->_methodRenderer->setClass('customer_group_select');
-            $this->_methodRenderer->setExtraParams('style="width:120px"');
+            $this->_methodRenderer->setExtraParams('style="width:200px"');
         }
         return $this->_methodRenderer;
     }
@@ -77,18 +82,5 @@ class Methods extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
         ]);
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add Shipping Method');
-    }
-
-    /**
-     * Prepare existing row data object
-     *
-     * @param \Magento\Framework\DataObject
-     */
-    protected function _prepareArrayRow(\Magento\Framework\DataObject $row)
-    {
-        $row->setData(
-            'option_extra_attr_' . $this->_getMethodRenderer()->calcOptionHash($row->getData('allowed_methods')),
-            'selected="selected"'
-        );
     }
 }

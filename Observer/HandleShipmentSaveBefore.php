@@ -67,8 +67,7 @@ class HandleShipmentSaveBefore implements \Magento\Framework\Event\ObserverInter
     {
         /* @var $shipment Shipment */
         $shipment = $observer->getShipment();
-        $carrier = $shipment->getOrder()->getShippingMethod();
-        if (strpos($carrier, 'yellowcube_') === 0 && $shipment->getOrder()->getIsInProcess()) {
+        if (strpos($shipment->getOrder()->getShippingMethod(), 'yellowcube_') === 0 && $shipment->getOrder()->getIsInProcess()) {
             /* @var $carrier \Magento\Shipping\Model\Carrier\AbstractCarrier */
             $carrier = $this->carrierFactory->createIfActive('yellowcube', $shipment->getStoreId());
             if ($carrier) {

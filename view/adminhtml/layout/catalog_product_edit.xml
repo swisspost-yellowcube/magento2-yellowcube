@@ -2,10 +2,10 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <body>
         <referenceContainer name="js">
-            <block template="Swisspost_YellowCube::yellowcube/catalog/product/js.phtml" class="Magento\Framework\View\Element\Template" name="yellowcube.catalog.product.js"/>
+            <block template="Swisspost_YellowCube::catalog/product/js.phtml" class="Magento\Framework\View\Element\Template" name="yellowcube.catalog.product.js"/>
         </referenceContainer>
         <referenceContainer name="content">
-            <block template="Swisspost_YellowCube::yellowcube/catalog/product/js/lot_management.phtml" class="Magento\Framework\View\Element\Template" name="yellowcube.catalog.product.lot_management.js"/>
+            <block template="Swisspost_YellowCube::catalog/product/js/lot_management.phtml" class="Magento\Framework\View\Element\Template" name="yellowcube.catalog.product.lot_management.js"/>
         </referenceContainer>
     </body>
 </page>
