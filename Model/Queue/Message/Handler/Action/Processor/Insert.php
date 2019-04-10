@@ -45,8 +45,6 @@ class Insert extends ProcessorAbstract implements ProcessorInterface
             // @todo provide the language of the current description (possible values de|fr|it|en)
             ->addArticleDescription($this->formatDescription($data['product_name']), 'de');
 
-        return;
-
         $response = $this->getYellowCubeService()->insertArticleMasterData($article);
 
         if (!is_object($response) || !$response->isSuccess()) {

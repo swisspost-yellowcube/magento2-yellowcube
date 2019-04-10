@@ -58,7 +58,7 @@ class Download extends \Magento\Config\Block\System\Config\Form\Field
         $this->addData([
             'button_label' => __($originalData['button_label']),
             'html_id' => $element->getHtmlId(),
-            'ajax_url' => $this->backendUrlInterface->getUrl('*/yellowcube_system_config_sync/download')
+            'ajax_url' => $this->backendUrlInterface->getUrl('yellowcube/sync/download')
         ]);
 
         return $this->_toHtml();

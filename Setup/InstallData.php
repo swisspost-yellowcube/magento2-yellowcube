@@ -8,6 +8,8 @@ use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Eav\Model\Config;
+use Magento\Inventory\Model\SourceRepository;
+use Magento\InventoryApi\Api\Data\SourceInterfaceFactory;
 use Swisspost\YellowCube\Model\Ean\Type\Source;
 
 class InstallData implements InstallDataInterface
@@ -18,10 +20,22 @@ class InstallData implements InstallDataInterface
      */
     private $eavSetupFactory;
 
-    public function __construct(EavSetupFactory $eavSetupFactory, Config $eavConfig)
+    /**
+     * @var SourceRepository
+     */
+    private $sourceRepository;
+
+    /**
+     * @var SourceInterfaceFactory
+     */
+    private $sourceFactory;
+
+    public function __construct(EavSetupFactory $eavSetupFactory, Config $eavConfig, SourceRepository $sourceRepository, SourceInterfaceFactory $sourceFactory)
     {
         $this->eavSetupFactory = $eavSetupFactory;
         $this->eavConfig = $eavConfig;
+        $this->sourceRepository = $sourceRepository;
+        $this->sourceFactory = $sourceFactory;
     }
 
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
@@ -31,7 +45,7 @@ class InstallData implements InstallDataInterface
 
         $ycGroupName = 'Yellow Cube';
 
-        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_sync_with_yellowcube');
+        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_sync_with_yellowcube');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_sync_with_yellowcube',
@@ -41,11 +55,11 @@ class InstallData implements InstallDataInterface
                 'backend' => '',
                 'frontend' => '',
                 'label' => 'Sync With YellowCube',
-                'input' => 'select',
+                'input' => 'boolean',
                 'class' => '',
                 'source' => Boolean::class,
                 'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
-                'visible' => false,
+                'visible' => true,
                 'required' => false,
                 'user_defined' => true,
                 'searchable' => false,
@@ -61,6 +75,7 @@ class InstallData implements InstallDataInterface
             ]
         );
 
+        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_ean_type');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_ean_type',
@@ -81,12 +96,13 @@ class InstallData implements InstallDataInterface
                 'filterable' => false,
                 'comparable' => false,
                 'visible_on_front' => false,
-                'used_in_product_listing' => true,
+                'used_in_product_listing' => false,
                 'unique' => false,
                 'apply_to' => 'simple',
             ]
         );
 
+        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_ean_code');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_ean_code',
@@ -108,6 +124,8 @@ class InstallData implements InstallDataInterface
                 'comparable' => false,
                 'visible_on_front' => false,
                 'used_in_product_listing' => true,
+                'is_used_in_grid' => true,
+                'is_filterable_in_grid' => true,
                 'unique' => false,
                 'apply_to' => 'simple',
             ]
@@ -131,14 +149,27 @@ class InstallData implements InstallDataInterface
                 'user_defined' => false,
                 'default' => '',
                 'searchable' => false,
-                'filterable' => true,
+                'filterable' => false,
                 'comparable' => false,
                 'visible_on_front' => false,
                 'used_in_product_listing' => true,
+                'is_used_in_grid' => true,
+                'is_filterable_in_grid' => true,
                 'unique' => false,
                 'apply_to' => 'simple',
             ]
         );
+
+        try {
+            $this->sourceRepository->get('YellowCube');
+        } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
+            $source = $this->sourceFactory->create();
+            $source->setName('YellowCube');
+            $source->setSourceCode('YellowCube');
+            $source->setCountryId('CH');
+            $source->setPostcode('4665');
+            $this->sourceRepository->save($source);
+        }
 
     }
 }

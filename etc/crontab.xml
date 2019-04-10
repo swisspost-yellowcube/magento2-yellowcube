@@ -2,7 +2,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
         <job name="yc_war" instance="Swisspost\YellowCube\Model\Synchronizer" method="war">
-            <schedule>30 1 * * *</schedule>
+            <schedule>30 * * * *</schedule>
         </job>
         <job name="yc_inventory_sync" instance="Swisspost\YellowCube\Model\Synchronizer" method="bar">
             <schedule>* * * * *</schedule>

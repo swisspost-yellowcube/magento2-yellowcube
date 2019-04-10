@@ -27,6 +27,8 @@ The store locale must be set to a locale supported by YellowCube (DE/FR/IT/EN-GB
 
 - `composer require swisspost-yellowcube/magento2-yellowcube`
 - `./bin/magento module:enable Swisspost_YellowCube`
+- `./bin/magento deploy:mode:set production`
+
 
 To add the Patch for MysqlMq:
 
@@ -48,9 +50,10 @@ composer update --lock
 
 ## Configuration
 
-In Menu `Stores > Configuration > Sales > Shipping Methods`
+In Menu `Stores > Configuration > Sales > Shipping Methods`. enable YellowCube and configure it based on the received
+information.
 
-@todo Store locale must be set to DE or EN UK to use cm and not inch.
+In Menu `Stores > Stocks`, create a Stock that contains at least the automatically created YellowCube source. 
 
 ### User Manual / Configuration Manual
 
@@ -58,7 +61,5 @@ In Menu `Stores > Configuration > Sales > Shipping Methods`
 
 ## Known issues/current state
 
-* The shipping methods are not selected correctly yet after saving, but they are saved.
 * Sync operations on settings form are not yet working.
-* Stock/Source management is not yet working
 

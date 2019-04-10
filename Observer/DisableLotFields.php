@@ -36,10 +36,13 @@ class DisableLotFields implements \Magento\Framework\Event\ObserverInterface
      */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-      $event = $observer->getEvent();
-      $product = $event->getProduct();
-      $product->lockAttribute('yc_stock');
-      $product->lockAttribute('yc_lot_info');
-      $product->lockAttribute('yc_most_recent_expiration_date');
+        if ($this->dataHelper->allowLockedAttributeChanges()) {
+            return;
+        }
+        $event = $observer->getEvent();
+        $product = $event->getProduct();
+        $product->lockAttribute('yc_stock');
+        $product->lockAttribute('yc_lot_info');
+        $product->lockAttribute('yc_most_recent_expiration_date');
     }
 }

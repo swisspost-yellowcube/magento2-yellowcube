@@ -62,7 +62,7 @@ class Upload
         $this->addData(array(
             'button_label' => __($originalData['button_label']),
             'html_id' => $element->getHtmlId(),
-            'ajax_url' => $this->backendUrlInterface->getUrl('*/yellowcube_system_config_sync/upload')
+            'ajax_url' => $this->backendUrlInterface->getUrl('yellowcube/sync/upload')
         ));
 
         return $this->_toHtml();

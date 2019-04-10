@@ -2,8 +2,6 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
-use Magento\Framework\App\Scope\Source;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
@@ -88,6 +86,8 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
      */
     public function process(array $data)
     {
+        $this->dataHelper->allowLockedAttributeChanges(true);
+
         $stockItems = $this->getYellowCubeService()->getInventory();
 
         $this->logger->info(__('YellowCube reports %1 products with a stock level', count($stockItems)));
@@ -129,6 +129,9 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         foreach ($lotSummary as $articleNo => $articleData) {
             $this->update($articleNo, $articleData);
         }
+
+
+        $this->dataHelper->allowLockedAttributeChanges(false);
     }
 
     /**
@@ -149,6 +152,11 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
             // insert your error handling here
             $this->logger->info(__('Product %1 inventory cannot be synchronized from YellowCube into Magento because it does not exist.', $sku));
             return $this;
+        }
+
+        if ($product->getData('yc_stock') != $data['qty']) {
+            $product->setData('yc_stock', $data['qty']);
+            $this->productRepository->save($product);
         }
 
         /**

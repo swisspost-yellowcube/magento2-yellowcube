@@ -29,6 +29,9 @@
                 <field id="sender_id" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Sender ID</label>
                 </field>
+                <field id="receiver" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Receiver</label>
+                </field>
                 <field id="depositor_number" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Depositor Number</label>
                 </field>

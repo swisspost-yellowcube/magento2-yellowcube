@@ -41,6 +41,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $jsonSerializer;
 
     /**
+     * @var bool
+     */
+    protected $allowLockedAttributeChanges = FALSE;
+
+    /**
      * Data constructor.
      *
      * @param Context $context
@@ -223,8 +228,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $certificatePassword = $this->getCertificatePassword($storeId);
 
         if (empty($senderId) || empty($endpoint) || empty($operationMode)
-            || (in_array($this->getOperationMode($storeId),
-                    array('P')) && empty($certificatePath) && empty($certificatePassword))
+            || (in_array(
+                $this->getOperationMode($storeId),
+                    ['P']
+            ) && empty($certificatePath) && empty($certificatePassword))
         ) {
             return false;
         }
@@ -293,24 +300,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * @param string $func
-     * @return bool
-     */
-    public function isFunctionAvailable($func)
-    {
-        if (ini_get('safe_mode')) {
-            return false;
-        }
-        $disabled = ini_get('disable_functions');
-        if ($disabled) {
-            $disabled = explode(',', $disabled);
-            $disabled = array_map('trim', $disabled);
-            return !in_array($func, $disabled);
-        }
-        return true;
-    }
-
-    /**
      * @param string $fullName
      * @param string $zip
      * @return string
@@ -326,22 +315,39 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     }
 
     /**
-     * Check whether specified attribute has been changed for given entity
+     * Check whether specified attribute has been changed for given entity.
      *
      * @param \Magento\Framework\Model\AbstractModel $entity
-     * @param string|array $key
+     *   The entity to check for changes.
+     * @param array $keys
+     *   The keys to check.
+     *
      * @return bool
+     *   TRUE if there was a change, false if not.
      */
-    public function hasDataChangedFor(\Magento\Framework\Model\AbstractModel $entity, $key)
+    public function hasDataChangedFor(\Magento\Framework\Model\AbstractModel $entity, array $keys)
     {
-        if (is_array($key)) {
-            foreach ($key as $code) {
-                if ($entity->getOrigData($code) !== $entity->getData($code)) {
-                    return true;
-                }
+        foreach ($keys as $key) {
+            if ($entity->getOrigData($key) != $entity->getData($key)) {
+                return true;
             }
-            return false;
         }
-        return $entity->getOrigData($key) !== $entity->getData($key);
+        return false;
+    }
+
+    /**
+     * Transient flag to allow locked field changes, e.g. during inventory sync.
+     *
+     * @param bool|null $allow
+     *   True or false to change the current value.
+     *
+     * @return bool
+     *   Whether changes are allowed.
+     */
+    public function allowLockedAttributeChanges($allow = NULL) {
+        if ($allow !== NULL) {
+            $this->allowLockedAttributeChanges = $allow;
+        }
+        return $this->allowLockedAttributeChanges;
     }
 }

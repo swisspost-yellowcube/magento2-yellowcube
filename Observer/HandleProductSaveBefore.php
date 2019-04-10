@@ -60,17 +60,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
         // reflect the value of the default view if "Use default Value" is checked
 
         $is_configured = $this->dataHelper->isConfigured(/* $storeId */);
-        $sync = FALSE;
-        // @todo Add support for virtual products.
-        if (FALSE && $product->isVirtual()) {
-            $parents = $this->catalogProductTypeConfigurable->getParentIdsByChild($product->getId());
-            if ($parents) {
-                $sync = $parents[0]->getData('yc_sync_with_yellowcube');
-            }
-        }
-        else {
-            $sync = $this->dataHelper->isConfigured(/* $storeId */);
-        }
+        $sync = $product->getData('yc_sync_with_yellowcube');
 
         if (!$is_configured && (bool)$sync) {
             throw new LocalizedException(__('Please, configure YellowCube before to save the product having YellowCube option enabled.'));
@@ -106,7 +96,9 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
             return;
         }
 
-        if ($this->dataHelper->hasDataChangedFor($product, ['name', 'weight', 'ts_dimensions_length', 'ts_dimensions_width', 'ts_dimensions_height', 'ts_dimensions_uom'])) {
+        $attributes = ['name', 'weight', 'ts_dimensions_length', 'ts_dimensions_width', 'ts_dimensions_height', 'ts_dimensions_uom', 'yc_ean_type', 'yc_ean_code'];
+
+        if ($this->dataHelper->hasDataChangedFor($product, $attributes)) {
             $this->synchronizer->update($product);
             return;
         }
