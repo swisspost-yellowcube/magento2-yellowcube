@@ -3,7 +3,6 @@
 namespace Swisspost\YellowCube\Setup;
 
 use Magento\Catalog\Model\Product\Attribute\Source\Boolean;
-use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
@@ -32,6 +31,7 @@ class InstallData implements InstallDataInterface
 
         $ycGroupName = 'Yellow Cube';
 
+        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_sync_with_yellowcube');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_sync_with_yellowcube',
@@ -98,7 +98,33 @@ class InstallData implements InstallDataInterface
                 'label' => 'EAN Code',
                 'input' => 'text',
                 'class' => '',
-                'source' => Source::class,
+                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'visible' => true,
+                'required' => false,
+                'user_defined' => false,
+                'default' => '',
+                'searchable' => false,
+                'filterable' => true,
+                'comparable' => false,
+                'visible_on_front' => false,
+                'used_in_product_listing' => true,
+                'unique' => false,
+                'apply_to' => 'simple',
+            ]
+        );
+
+        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_stock');
+        $eavSetup->addAttribute(
+            \Magento\Catalog\Model\Product::ENTITY,
+            'yc_stock',
+            [
+                'group' => $ycGroupName,
+                'type' => 'varchar',
+                'backend' => '',
+                'frontend' => '',
+                'label' => 'YellowCube Stock',
+                'input' => 'text',
+                'class' => '',
                 'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
                 'visible' => true,
                 'required' => false,
