@@ -5,12 +5,11 @@ namespace Swisspost\YellowCube\Observer;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order\Shipment;
 use Magento\Shipping\Model\Shipment\Request;
-use function strpos;
 use Swisspost\YellowCube\Helper\Data;
 use Swisspost\YellowCube\Model\Shipping\Carrier\Carrier;
 use Swisspost\YellowCube\Model\Synchronizer;
 
-class HandleShipmentSaveBefore implements \Magento\Framework\Event\ObserverInterface
+class HandleShipmentSaveAfter implements \Magento\Framework\Event\ObserverInterface
 {
 
     /**

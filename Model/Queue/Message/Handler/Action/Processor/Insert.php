@@ -41,7 +41,7 @@ class Insert extends ProcessorAbstract implements ProcessorInterface
             ->setHeight($this->formatUom($data['product_height']), $uom)
             ->setVolume($this->formatUom($data['product_volume']), $uomq)
             ->setEAN($data['product_ean'], $data['product_ean_type'])
-            ->setBatchMngtReq($data['product_lot_management'])
+            ->setBatchMngtReq((int) $data['product_lot_management'])
             // @todo provide the language of the current description (possible values de|fr|it|en)
             ->addArticleDescription($this->formatDescription($data['product_name']), 'de');
 

@@ -33,7 +33,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
     /**
      * @var \Magento\Sales\Model\ResourceModel\Order\Shipment\Item\CollectionFactory
      */
-    protected $salesResourceModelOrderShipmentItemCollectionFactory;
+    protected $shipmentItemCollectionFactory;
 
     /**
      * @var \Magento\Catalog\Api\ProductRepositoryInterface
@@ -73,7 +73,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         $this->storeManager = $storeManager;
         $this->productRepository = $productRepository;
         $this->catalogResourceModelProductActionFactory = $catalogResourceModelProductActionFactory;
-        $this->salesResourceModelOrderShipmentItemCollectionFactory = $salesResourceModelOrderShipmentItemCollectionFactory;
+        $this->shipmentItemCollectionFactory = $salesResourceModelOrderShipmentItemCollectionFactory;
         $this->sourceItemSave = $sourceItemsSave;
         $this->sourceItemFactory = $sourceItemFactory;
         $this->jsonSerializer = $jsonSerializer;
@@ -173,7 +173,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         /**
          * YellowCube stock - qty of products not yet shipped = new stock
          */
-        $shipmentItemsCollection = $this->salesResourceModelOrderShipmentItemCollectionFactory->create();
+        $shipmentItemsCollection = $this->shipmentItemCollectionFactory->create();
         $shipmentItemsCollection
             ->addFieldToFilter('product_id', $product->getId())
             ->addFieldToSelect('additional_data')

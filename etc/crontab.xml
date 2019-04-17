@@ -5,6 +5,9 @@
             <schedule>30 * * * *</schedule>
         </job>
         <job name="yc_inventory_sync" instance="Swisspost\YellowCube\Model\Synchronizer" method="bar">
+            <schedule>30 1 * * *</schedule>
+        </job>
+        <job name="yc_shipment_sync" instance="Swisspost\YellowCube\Model\ShipmentStatusSync" method="processPendingShipments">
             <schedule>* * * * *</schedule>
         </job>
     </group>

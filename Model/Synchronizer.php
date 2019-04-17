@@ -11,7 +11,6 @@ class Synchronizer
     const SYNC_ACTION_UPDATE                = 'Update';
     const SYNC_ACTION_DEACTIVATE            = 'Deactivate';
     const SYNC_ORDER_WAB                    = 'OrderWab';
-    const SYNC_ORDER_UPDATE                 = 'OrderUpdate';
     const SYNC_INVENTORY                    = 'Bar';
     const SYNC_WAR                          = 'War';
 
@@ -65,6 +64,7 @@ class Synchronizer
         $this->publisher = $publisher;
         $this->jsonSerializer = $json_serializer;
     }
+
     public function action(\Magento\Catalog\Model\Product $product, $action = self::SYNC_ACTION_INSERT)
     {
         $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
@@ -155,58 +155,9 @@ class Synchronizer
     public function ship(\Magento\Shipping\Model\Shipment\Request $request)
     {
         $shipment = $request->getOrderShipment();
-        $order = $shipment->getOrder();
-
-        $locale = $this->dataHelper->getConfigValue('general/locale/code', $request->getStoreId());
-        $locale = explode('_', $locale);
-
-        $positionItems = [];
-        foreach ($shipment->getAllItems() as $item) {
-            $product = $this->catalogProductFactory->create()->load($item->getProductId());
-            $positionItems[] = [
-                'article_id' => $item->getProductId(),
-                'article_number' => $item->getSku(),
-                'article_ean' => $product->getData('yc_ean_code'),
-                'article_title' => $item->getName(),
-                'article_qty' => $item->getQty(),
-            ];
-        }
-
-        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
-            'action'    => self::SYNC_ORDER_WAB,
-            'store_id'  => $shipment->getStoreId(),
-            'plant_id'  => $this->dataHelper->getPlantId($shipment->getStoreId()),
-
-            // Order Header
-            'deposit_number'    => $this->dataHelper->getDepositorNumber($shipment->getStoreId()),
-            'order_id'             => $shipment->getOrderId(),
-            'order_date'        => date('Ymd'),
-
-            // Partner Address
-            'partner_type'          => Data::PARTNER_TYPE,
-            'partner_number'        => $this->dataHelper->getPartnerNumber($shipment->getStoreId()),
-            'partner_reference'     => $this->dataHelper->getPartnerReference(
-                $shipment->getShippingAddress()->getName(),
-                $shipment->getShippingAddress()->getPostcode()
-            ),
-            'partner_name'          => $shipment->getShippingAddress()->getName(),
-            'partner_name2'         => $shipment->getShippingAddress()->getCompany(),
-            'partner_street'        => $shipment->getShippingAddress()->getStreetLine(1),
-            'partner_name3'         => $shipment->getShippingAddress()->getStreetLine(2),
-            'partner_country_code'  => $shipment->getShippingAddress()->getCountryId(),
-            'partner_city'          => $shipment->getShippingAddress()->getCity(),
-            'partner_zip_code'      => $shipment->getShippingAddress()->getPostcode(),
-            'partner_phone'         => $shipment->getShippingAddress()->getTelephone(),
-            'partner_email'         => $shipment->getShippingAddress()->getEmail(),
-            'partner_language'      => $locale[0], // possible values expected de|fr|it|en ...
-
-            // ValueAddedServices - AdditionalService
-            'service_basic_shipping'      => $this->dataHelper->getRealCode(str_replace('yellowcube_', '', $order->getShippingMethod())),
-            'service_additional_shipping' => $this->dataHelper->getAdditionalShipping(str_replace('yellowcube_', '', $order->getShippingMethod())),
-
-            // Order Positions
-            'items' => $positionItems
-        ]));
+        $this->publish(static::SYNC_ORDER_WAB, [
+            'shipment_id'  => $shipment->getId(),
+        ]);
 
         return $this;
     }
@@ -216,9 +167,7 @@ class Synchronizer
      */
     public function bar()
     {
-        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
-            'action' => self::SYNC_INVENTORY,
-        ]));
+        $this->publish(static::SYNC_INVENTORY);
         return $this;
     }
 
@@ -227,9 +176,21 @@ class Synchronizer
      */
     public function war()
     {
-        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
-            'action' => self::SYNC_WAR,
-        ]));
+        $this->publish(static::SYNC_WAR);
         return $this;
+    }
+
+    /**
+     * Publishes an action to the message queue.
+     *
+     * @param string $action
+     *   The action.
+     * @param array $data
+     *   Additional data.
+     */
+    protected function publish(string $action, array $data = [])
+    {
+        $data['action'] = $action;
+        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize($data));
     }
 }

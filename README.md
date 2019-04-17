@@ -59,7 +59,16 @@ In Menu `Stores > Stocks`, create a Stock that contains at least the automatical
 
 @TODO
 
-## Known issues/current state
+## Automated tests
 
-* Sync operations on settings form are not yet working.
+Tu run tests, follow the steps on
+https://devdocs.magento.com/guides/v2.3/test/integration/integration_test_execution.html, set testsuites to:
+
+```
+<testsuite name="YellowCube">
+    <directory suffix="Test.php">../../../vendor/swisspost-yellowcube/magento2-yellowcube/Tests/Integration</directory>
+</testsuite>
+
+```
+
 

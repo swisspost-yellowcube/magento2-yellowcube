@@ -102,7 +102,7 @@ class InstallData implements InstallDataInterface
             ]
         );
 
-        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_ean_code');
+        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_ean_code');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_ean_code',
@@ -131,7 +131,7 @@ class InstallData implements InstallDataInterface
             ]
         );
 
-        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_stock');
+        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_stock');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_stock',
