@@ -198,11 +198,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getAllowedMethods($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        $allowed_methods = $this->getConfigValue(self::CONFIG_ALLOWED_METHODS, $storeId, true);
+        $allowed_methods = $this->getConfigValue(self::CONFIG_ALLOWED_METHODS, $storeId);
         if (is_string($allowed_methods)) {
             $allowed_methods = $this->jsonSerializer->unserialize($allowed_methods);
         }
-        return $allowed_methods;
+        return (array) $allowed_methods;
     }
 
     /**

@@ -14,6 +14,8 @@
                 default="0" comment="Shipment ID"/>
         <column xsi:type="int" name="shipment_item_id" padding="10" unsigned="true" nullable="false" identity="false"
                 default="0" comment="Shipment Item ID"/>
+        <column xsi:type="int" name="product_id" padding="10" unsigned="true" nullable="false" identity="false"
+                default="0" comment="Product ID"/>
         <column xsi:type="smallint" name="status" padding="5" unsigned="true" nullable="false" identity="false"
                 default="0" comment="YellowCube Status"/>
         <column xsi:type="varchar" name="reference" nullable="false" length="10" default="" comment="YellowCube Reference"/>

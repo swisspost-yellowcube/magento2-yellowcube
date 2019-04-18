@@ -14,6 +14,16 @@ $config = [
     'sender_id' => '12345',
     'depositor_number' => '54321',
     'plant_id' => 'Y022',
+    'allowed_methods' => json_encode([
+        '_1554908033782_782' => [
+                'allowed_methods' => 'ECO',
+                'price' => '5',
+            ],
+        '_1554908037123_123' => [
+                'allowed_methods' => 'PRI SI',
+                'price' => '10',
+            ],
+    ]),
 ];
 
 foreach ($config as $key => $value) {

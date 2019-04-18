@@ -4,12 +4,16 @@ namespace Swisspost\YellowCube\Setup;
 
 use Magento\Catalog\Model\Product\Attribute\Source\Boolean;
 use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\Api\SearchCriteriaBuilderFactory;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
-use Magento\Eav\Model\Config;
 use Magento\Inventory\Model\SourceRepository;
+use Magento\Inventory\Model\StockRepository;
 use Magento\InventoryApi\Api\Data\SourceInterfaceFactory;
+use Magento\InventoryApi\Api\Data\StockInterfaceFactory;
+use Magento\InventoryApi\Api\Data\StockSourceLinkInterfaceFactory;
+use Magento\InventoryApi\Api\StockSourceLinksSaveInterface;
 use Swisspost\YellowCube\Model\Ean\Type\Source;
 
 class InstallData implements InstallDataInterface
@@ -30,12 +34,49 @@ class InstallData implements InstallDataInterface
      */
     private $sourceFactory;
 
-    public function __construct(EavSetupFactory $eavSetupFactory, Config $eavConfig, SourceRepository $sourceRepository, SourceInterfaceFactory $sourceFactory)
-    {
+    /**
+     * @var \Magento\InventoryApi\Api\Data\StockInterfaceFactory
+     */
+    private $stockFactory;
+
+    /**
+     * @var \Magento\Inventory\Model\StockRepository
+     */
+    private $stockRepository;
+
+    /**
+     * @var \Magento\InventoryApi\Api\StockSourceLinksSaveInterface
+     */
+    private $stockSourceLinksSave;
+
+    /**
+     * @var \Magento\Framework\Api\SearchCriteriaBuilderFactory
+     */
+    private $searchCriteriaBuilderFactory;
+
+    /**
+     * @var \Magento\InventoryApi\Api\Data\StockSourceLinkInterfaceFactory
+     */
+    private $stockSourceLinkInterfaceFactory;
+
+    public function __construct(
+        EavSetupFactory $eavSetupFactory,
+        SourceRepository $sourceRepository,
+        SourceInterfaceFactory $sourceFactory,
+        StockInterfaceFactory $stockFactory,
+        StockRepository $stockRepository,
+        StockSourceLinkInterfaceFactory $stockSourceLinkInterfaceFactory,
+        StockSourceLinksSaveInterface $stockSourceLinksSave,
+        SearchCriteriaBuilderFactory $searchCriteriaBuilderFactory
+    ) {
         $this->eavSetupFactory = $eavSetupFactory;
-        $this->eavConfig = $eavConfig;
         $this->sourceRepository = $sourceRepository;
         $this->sourceFactory = $sourceFactory;
+        $this->stockFactory = $stockFactory;
+        $this->stockRepository = $stockRepository;
+        $this->stockSourceLinkInterfaceFactory = $stockSourceLinkInterfaceFactory;
+        $this->stockSourceLinksSave = $stockSourceLinksSave;
+        $this->searchCriteriaBuilderFactory = $searchCriteriaBuilderFactory;
     }
 
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
@@ -169,6 +210,21 @@ class InstallData implements InstallDataInterface
             $source->setCountryId('CH');
             $source->setPostcode('4665');
             $this->sourceRepository->save($source);
+        }
+
+        $searchCriteria = $this->searchCriteriaBuilderFactory->create()->addFilter('name', 'YellowCube')
+            ->create();
+
+        if ($this->stockRepository->getList($searchCriteria)->getTotalCount() ==  0) {
+            /** @var \Magento\Inventory\Model\Stock $stock */
+            $stock = $this->stockFactory->create();
+            $stock->setName('YellowCube');
+            $this->stockRepository->save($stock);
+            $stockSourceLink = $this->stockSourceLinkInterfaceFactory->create();
+            $stockSourceLink->setSourceCode('YellowCube');
+            $stockSourceLink->setStockId($stock->getStockId());
+            $stockSourceLink->setPriority(1);
+            $this->stockSourceLinksSave->execute([$stockSourceLink]);
         }
 
     }

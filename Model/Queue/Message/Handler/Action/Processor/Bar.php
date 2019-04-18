@@ -6,6 +6,7 @@ use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
+use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 
 class Bar extends ProcessorAbstract implements ProcessorInterface
 {
@@ -55,6 +56,11 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
      */
     protected $jsonSerializer;
 
+    /**
+     * @var YellowCubeShipmentItemRepository
+     */
+    protected $yellowCubeShipmentItemRepository;
+
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         \Swisspost\YellowCube\Helper\Data $dataHelper,
@@ -66,7 +72,8 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
         SourceItemsSaveInterface $sourceItemsSave,
         \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory $sourceItemFactory,
-        \Magento\Framework\Serialize\Serializer\Json $jsonSerializer
+        \Magento\Framework\Serialize\Serializer\Json $jsonSerializer,
+        YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository
     ) {
         parent::__construct($logger, $dataHelper, $clientFactory);
         $this->catalogProductFactory = $catalogProductFactory;
@@ -77,6 +84,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         $this->sourceItemSave = $sourceItemsSave;
         $this->sourceItemFactory = $sourceItemFactory;
         $this->jsonSerializer = $jsonSerializer;
+        $this->yellowCubeShipmentItemRepository = $yellowCubeShipmentItemRepository;
     }
 
     /**
@@ -130,7 +138,6 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
             $this->update($articleNo, $articleData);
         }
 
-
         $this->dataHelper->allowLockedAttributeChanges(false);
     }
 
@@ -175,23 +182,15 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
          */
         $shipmentItemsCollection = $this->shipmentItemCollectionFactory->create();
         $shipmentItemsCollection
-            ->addFieldToFilter('product_id', $product->getId())
+            ->addFieldToFilter('entity_id', ['in' => $this->yellowCubeShipmentItemRepository->getUnshippedShipmentIdsByProductId($product->getId())])
             ->addFieldToSelect('additional_data')
             ->addFieldToSelect('order_item_id')
             ->addFieldToSelect('qty');
 
         $qtyToDecrease = 0;
         foreach ($shipmentItemsCollection->getItems() as $shipment_item) {
-            $order = $shipment_item->getOrderItem()->getOrder();
-            if (strpos($order->getShippingMethod(), 'yellowcube_') === 0) {
-                $additionalData = $shipment_item->getAdditionalData() ? $this->jsonSerializer->unserialize($shipment_item->getAdditionalData()) : [];
-                if (!isset($additionalData['yc_shipped']) || $additionalData['yc_shipped'] === 0) {
-                    //$qtyToDecrease += $shipment_item->getQty();
-                }
-            }
+            $qtyToDecrease += $shipment_item->getQty();
         }
-
-        $data['qty'] -= $qtyToDecrease;
 
         try {
             if ($this->dataHelper->getDebug()) {
@@ -202,7 +201,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
             $source_item = $this->sourceItemFactory->create();
             $source_item->setStatus(SourceItemInterface::STATUS_IN_STOCK);
             $source_item->setSku($sku);
-            $source_item->setQuantity($data['qty']);
+            $source_item->setQuantity($data['qty'] - $qtyToDecrease);
             $source_item->setSourceCode('YellowCube');
             $this->sourceItemSave->execute([$source_item]);
         } catch (\Exception $e) {
