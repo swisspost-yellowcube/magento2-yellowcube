@@ -53,12 +53,19 @@ class YellowCubeShipmentItemRepository
         return $shipmentIds;
     }
 
-    public function getUnshippedShipmentIdsByProductId($product_id)
+    public function getUnshippedShipmentIdsByProductId($product_id, $shipped_timestamp)
     {
         $connection = $this->resource->getConnection();
         $table_name = $this->resource->getTableName(static::TABLE_NAME);
 
-        $result = $connection->query('SELECT DISTINCT shipment_id, reference FROM ' . $table_name . ' WHERE status = ' . static::STATUS_SENT . ' OR status = ' . static::STATUS_CONFIRMED);
+        $bind = [
+            ':sent' => static::STATUS_SENT,
+            ':confirmed' => static::STATUS_CONFIRMED,
+            'shipped' => static::STATUS_SHIPPED,
+            ':shipped_timestamp' => date('Y-m-d H:i:s', $shipped_timestamp),
+        ];
+
+        $result = $connection->query('SELECT DISTINCT shipment_id, reference FROM ' . $table_name . ' WHERE status = :sent OR status = :confirmed OR (status = :shipped AND timestamp > :shipped_timestamp)', $bind);
         $shipmentIds = [];
         while ($row = $result->fetch()) {
             $shipmentIds[] = $row['shipment_id'];

@@ -96,14 +96,17 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
     {
         $this->dataHelper->allowLockedAttributeChanges(true);
 
-        $stockItems = $this->getYellowCubeService()->getInventory();
+        $inventory = $this->getYellowCubeService()->getInventoryWithMetadata();
 
-        $this->logger->info(__('YellowCube reports %1 products with a stock level', count($stockItems)));
+        $this->logger->info(__('YellowCube reports %1 products with a stock level', count($inventory->getArticles())));
+        if (!$inventory->getArticles()) {
+            return;
+        }
 
         $lotSummary = [];
 
         /* @var $article \YellowCube\BAR\Article */
-        foreach ($stockItems as $article) {
+        foreach ($inventory->getArticles() as $article) {
             $articleNo = $article->getArticleNo();
             $articleLot = $article->getLot();
 
@@ -113,7 +116,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
                 $lotSummary[$articleNo]['lotInfo'] = 'Lot: ' . $articleLot . " Quantity: " . (int)$article->getQuantityUOM()->get() . ' ExpDate: ' . $this->convertYCDate($article->getBestBeforeDate()) . PHP_EOL;
                 $lotSummary[$articleNo]['recentExpDate'] = $article->getBestBeforeDate();
 
-                foreach ($stockItems as $article2) {
+                foreach ($inventory->getArticles() as $article2) {
                     $article2No = $article2->getArticleNo();
                     $article2Lot = $article2->getLot();
                     //only do this if its not the lot already iterating
@@ -135,7 +138,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         }
 
         foreach ($lotSummary as $articleNo => $articleData) {
-            $this->update($articleNo, $articleData);
+            $this->update($articleNo, $articleData, $inventory->getTimestamp());
         }
 
         $this->dataHelper->allowLockedAttributeChanges(false);
@@ -151,7 +154,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
      *
      * @throws \Zend_Json_Exception
      */
-    public function update($sku, array $data)
+    public function update($sku, array $data, $inventory_timestamp)
     {
         try {
             $product = $this->productRepository->get($sku);
@@ -182,7 +185,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
          */
         $shipmentItemsCollection = $this->shipmentItemCollectionFactory->create();
         $shipmentItemsCollection
-            ->addFieldToFilter('entity_id', ['in' => $this->yellowCubeShipmentItemRepository->getUnshippedShipmentIdsByProductId($product->getId())])
+            ->addFieldToFilter('entity_id', ['in' => $this->yellowCubeShipmentItemRepository->getUnshippedShipmentIdsByProductId($product->getId(), strtotime($inventory_timestamp))])
             ->addFieldToSelect('additional_data')
             ->addFieldToSelect('order_item_id')
             ->addFieldToSelect('qty');

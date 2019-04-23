@@ -14,10 +14,12 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
 use Magento\Sales\Model\ResourceModel\Order\Shipment\Item;
 use Magento\Store\Model\StoreManager;
+use function strtotime;
 use Swisspost\YellowCube\Model\Library\ClientFactory;
 use Swisspost\YellowCube\Model\Synchronizer;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 use YellowCube\ART\Article;
+use YellowCube\BAR\Inventory;
 use YellowCube\BAR\QuantityUOM;
 use YellowCube\Service;
 
@@ -165,9 +167,13 @@ class ProductTest extends \Magento\TestFramework\TestCase\AbstractController
             ->setArticleNo('simple2')
             ->setQuantityUOM(new QuantityUOM(9));
 
+
+
+        $inventory = new Inventory([$article1, $article2], date('YmdHi', strtotime('yesterday')));
+
         $this->yellowCubeServiceMock->expects($this->atLeastOnce())
-            ->method('getInventory')
-            ->willReturn([$article1, $article2]);
+            ->method('getInventoryWithMetadata')
+            ->willReturn($inventory);
 
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
         $synchronizer->bar();
@@ -235,7 +241,19 @@ class ProductTest extends \Magento\TestFramework\TestCase\AbstractController
         $article2->setQuantityUOM(new QuantityUOM(8));
         $yellowCubeShipmentItemRepository->updateByShipmentId($shipmentItem->getEntityId(), YellowCubeShipmentItemRepository::STATUS_SHIPPED);
 
-        // Ensure that synchronizing again keeps the stock.
+        // The item was shipped before the inventory, so it is still removed.
+        $synchronizer = $this->_objectManager->get(Synchronizer::class);
+        $synchronizer->bar();
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+        $this->queueConsumer->process(1);
+        $this->assertStock('simple2', 8, 5);
+
+        // We can not fake the shipment item timestamp, so fake the inventory timestamp instead, set it to the past
+        // now the shipped item should still be removed.
+
+        $inventory->setTimestamp(date('YmdHi', strtotime('tomorrow')));
+
+        // Now the item is no longer removed from the inventory.
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
         $synchronizer->bar();
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
