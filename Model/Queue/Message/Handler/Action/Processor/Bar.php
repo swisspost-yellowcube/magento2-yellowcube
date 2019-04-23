@@ -4,7 +4,6 @@ namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\InventoryApi\Api\SourceItemsSaveInterface;
-use function strtotime;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
@@ -97,18 +96,17 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
     {
         $this->dataHelper->allowLockedAttributeChanges(true);
 
-        $inventory = $this->getYellowCubeService()->getInventoryWithControlReference();
+        $inventory = $this->getYellowCubeService()->getInventoryWithMetadata();
 
-        if (empty($inventory->ArticleList->Article)) {
+        $this->logger->info(__('YellowCube reports %1 products with a stock level', count($inventory->getArticles())));
+        if (!$inventory->getArticles()) {
             return;
         }
-
-        $this->logger->info(__('YellowCube reports %1 products with a stock level', count($inventory->ArticleList->Article)));
 
         $lotSummary = [];
 
         /* @var $article \YellowCube\BAR\Article */
-        foreach ($inventory->ArticleList->Article as $article) {
+        foreach ($inventory->getArticles() as $article) {
             $articleNo = $article->getArticleNo();
             $articleLot = $article->getLot();
 
@@ -118,7 +116,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
                 $lotSummary[$articleNo]['lotInfo'] = 'Lot: ' . $articleLot . " Quantity: " . (int)$article->getQuantityUOM()->get() . ' ExpDate: ' . $this->convertYCDate($article->getBestBeforeDate()) . PHP_EOL;
                 $lotSummary[$articleNo]['recentExpDate'] = $article->getBestBeforeDate();
 
-                foreach ($inventory->ArticleList->Article as $article2) {
+                foreach ($inventory->getArticles() as $article2) {
                     $article2No = $article2->getArticleNo();
                     $article2Lot = $article2->getLot();
                     //only do this if its not the lot already iterating
@@ -140,7 +138,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         }
 
         foreach ($lotSummary as $articleNo => $articleData) {
-            $this->update($articleNo, $articleData, $inventory->ControlReference->Timestamp);
+            $this->update($articleNo, $articleData, $inventory->getTimestamp());
         }
 
         $this->dataHelper->allowLockedAttributeChanges(false);

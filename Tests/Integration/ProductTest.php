@@ -19,6 +19,7 @@ use Swisspost\YellowCube\Model\Library\ClientFactory;
 use Swisspost\YellowCube\Model\Synchronizer;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 use YellowCube\ART\Article;
+use YellowCube\BAR\Inventory;
 use YellowCube\BAR\QuantityUOM;
 use YellowCube\Service;
 
@@ -166,14 +167,12 @@ class ProductTest extends \Magento\TestFramework\TestCase\AbstractController
             ->setArticleNo('simple2')
             ->setQuantityUOM(new QuantityUOM(9));
 
-        $inventory = new \stdClass();
-        $inventory->ControlReference = new \stdClass();
-        $inventory->ControlReference->Timestamp = date('YmdHi', strtotime('yesterday'));
-        $inventory->ArticleList = new \stdClass();
-        $inventory->ArticleList->Article = [$article1, $article2];
+
+
+        $inventory = new Inventory([$article1, $article2], date('YmdHi', strtotime('yesterday')));
 
         $this->yellowCubeServiceMock->expects($this->atLeastOnce())
-            ->method('getInventoryWithControlReference')
+            ->method('getInventoryWithMetadata')
             ->willReturn($inventory);
 
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
@@ -252,7 +251,7 @@ class ProductTest extends \Magento\TestFramework\TestCase\AbstractController
         // We can not fake the shipment item timestamp, so fake the inventory timestamp instead, set it to the past
         // now the shipped item should still be removed.
 
-        $inventory->ControlReference->Timestamp = date('YmdHi', strtotime('tomorrow'));
+        $inventory->setTimestamp(date('YmdHi', strtotime('tomorrow')));
 
         // Now the item is no longer removed from the inventory.
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
