@@ -200,13 +200,13 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
                 $this->logger->info(__('Product %1 with the qty of %2 will be saved.', $sku, $data['qty']));
             }
 
-            /** @var SourceItemInterface $source_item */
-            $source_item = $this->sourceItemFactory->create();
-            $source_item->setStatus(SourceItemInterface::STATUS_IN_STOCK);
-            $source_item->setSku($sku);
-            $source_item->setQuantity($data['qty'] - $qtyToDecrease);
-            $source_item->setSourceCode('YellowCube');
-            $this->sourceItemSave->execute([$source_item]);
+            /** @var SourceItemInterface $ourceItem */
+            $ourceItem = $this->sourceItemFactory->create();
+            $ourceItem->setStatus(SourceItemInterface::STATUS_IN_STOCK);
+            $ourceItem->setSku($sku);
+            $ourceItem->setQuantity($data['qty'] - $qtyToDecrease);
+            $ourceItem->setSourceCode('YellowCube');
+            $this->sourceItemSave->execute([$ourceItem]);
         } catch (\Exception $e) {
             $this->logger->critical($e);
         }

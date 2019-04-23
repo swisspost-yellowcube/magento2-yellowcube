@@ -53,6 +53,19 @@ class YellowCubeShipmentItemRepository
         return $shipmentIds;
     }
 
+    public function getByReference($reference)
+    {
+        $connection = $this->resource->getConnection();
+        $table_name = $this->resource->getTableName(static::TABLE_NAME);
+
+        $result = $connection->query('SELECT DISTINCT * FROM ' . $table_name . ' WHERE reference = :reference', [':reference' => $reference]);
+        $shipmentIds = [];
+        while ($row = $result->fetch()) {
+            $shipmentIds[$row['shipment_item_id']] = $row;
+        }
+        return $shipmentIds;
+    }
+
     public function getUnshippedShipmentIdsByProductId($product_id, $shipped_timestamp)
     {
         $connection = $this->resource->getConnection();

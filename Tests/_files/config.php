@@ -13,6 +13,7 @@ $config = [
     'soap_url' => 'http://yellow-cube-dummy.example',
     'sender_id' => '12345',
     'depositor_number' => '54321',
+    'partner_number' => '0004653',
     'plant_id' => 'Y022',
     'allowed_methods' => json_encode([
         '_1554908033782_782' => [

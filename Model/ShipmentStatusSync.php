@@ -107,6 +107,7 @@ class ShipmentStatusSync
             $this->tools->sendAdminNotification($message);
         } else {
             if ($response->isSuccess() && !$response->isPending() && !$response->isError()) {
+                $this->yellowCubeShipmentItemRepository->updateByShipmentId($shipment->getId(), YellowCubeShipmentItemRepository::STATUS_CONFIRMED);
                 $shipment
                         ->addComment(__('YellowCube Success ' . $response->getStatusText()), false, false)
                         ->save();

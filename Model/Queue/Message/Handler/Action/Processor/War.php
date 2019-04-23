@@ -2,37 +2,59 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
+use Magento\Sales\Api\Data\ShipmentItemInterface;
+use Magento\Sales\Api\ShipmentRepositoryInterface;
+use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
+use Magento\Sales\Model\Order\ShipmentRepository;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
+use Swisspost\YellowCube\Model\Shipping\Carrier\Carrier;
+use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 
 class War extends ProcessorAbstract implements ProcessorInterface
 {
 
     /**
-     * @var \Magento\Sales\Model\Order\ShipmentFactory
-     */
-    protected $salesOrderShipmentFactory;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $logger;
-
-    /**
      * @var \Magento\Sales\Model\Order\Shipment\TrackFactory
      */
-    protected $salesOrderShipmentTrackFactory;
+    protected $shipmentTrackFactory;
+
+    /**
+     * @var \Magento\Sales\Api\ShipmentRepositoryInterface
+     */
+    protected $shipmentRepository;
+
+    /**
+     * @var \Magento\Framework\Api\SearchCriteriaBuilder
+     */
+    protected $searchCriteriaBuilder;
+
+    /**
+     * @var \Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository
+     */
+    protected $yellowCubeShipmentItemRepository;
+
+    /**
+     * @var ShipmentTrackRepositoryInterface
+     */
+    protected $shipmentTrackRepository;
 
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
+        \Magento\Sales\Model\Order\Shipment\TrackFactory $shipmentTrackFactory,
         \Swisspost\YellowCube\Helper\Data $dataHelper,
         \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory,
-        \Magento\Sales\Model\Order\ShipmentFactory $salesOrderShipmentFactory,
-        \Magento\Sales\Model\Order\Shipment\TrackFactory $salesOrderShipmentTrackFactory
+        \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentRepository,
+        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
+        YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository,
+        ShipmentTrackRepositoryInterface $shipmentTrackRepository
     ) {
         parent::__construct($logger, $dataHelper, $clientFactory);
-        $this->salesOrderShipmentFactory = $salesOrderShipmentFactory;
-        $this->salesOrderShipmentTrackFactory = $salesOrderShipmentTrackFactory;
+        $this->shipmentTrackFactory = $shipmentTrackFactory;
+        $this->shipmentRepository = $shipmentRepository;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->yellowCubeShipmentItemRepository = $yellowCubeShipmentItemRepository;
+        $this->shipmentTrackRepository = $shipmentTrackRepository;
     }
     /**
      * @param array $data
@@ -46,11 +68,12 @@ class War extends ProcessorAbstract implements ProcessorInterface
             foreach ($goodsIssueList as $goodsIssue) {
                 $header = $goodsIssue->getCustomerOrderHeader();
 
-                $shipment = $this->salesOrderShipmentFactory->create()->load($header->getCustomerOrderNo(), 'increment_id');
+                $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', $header->getCustomerOrderNo())->create();
+                $shipmentList = $this->shipmentRepository->getList($searchCriteria)->getItems();
                 $shipmentNo = $header->getPostalShipmentNo();
 
                 // Multi packaging / shipping is not supported atm.
-                if (!empty($shipmentNo) && $shipment->getId()) {
+                if (!empty($shipmentNo) && $shipment = reset($shipmentList)) {
                     /**
                      * Define yc_shipped to 1 to be used later in BAR process that the shipping has been done
                      */
@@ -63,15 +86,13 @@ class War extends ProcessorAbstract implements ProcessorInterface
                             $this->logger->debug('Debug $customerOrderDetail ' . print_r($customerOrderDetail, true));
 
                             reset($shipmentItems);
+                            /** @var ShipmentItemInterface $item */
                             foreach ($shipmentItems as $item) {
-                                $this->logger->debug('Debug $item ' . print_r($item, true));
+                                // $this->logger->debug('Debug $item ' . print_r($item, true));
 
-                                /* @var $item Mage_Sales_Model_Order_Shipment_Item */
-                                if ($customerOrderDetail->getArticleNo() == $item->getSku() && !isset($hash[$item->getId()])) {
-                                    $item
-                                        ->setAdditionalData(\Zend_Json::encode(['yc_shipped' => 1]))
-                                        ->save();
-                                    $hash[$item->getId()] = true;
+                                if ($customerOrderDetail->getArticleNo() == $item->getSku() && !isset($hash[$item->getEntityId()])) {
+                                    $this->yellowCubeShipmentItemRepository->updateByShipmentId($item->getEntityId(), YellowCubeShipmentItemRepository::STATUS_SHIPPED);
+                                    $hash[$item->getEntityId()] = true;
                                 }
                             }
                             $lotId = $customerOrderDetail->getLot();
@@ -87,22 +108,22 @@ class War extends ProcessorAbstract implements ProcessorInterface
                     $shippingUrl = 'http://www.post.ch/swisspost-tracking?formattedParcelCodes=' . $shipmentNo;
 
                     // Add a message to the order history incl. link to shipping infos
-                    $message = __('Your order has been shipped. You can use the following url for shipping tracking: <a href="%1$s" target="_blank">%1$s</a>', $shippingUrl);
-                    $message .= "\r\n" . __('Lot ID: %s', $lotId);
-                    $message .= "\r\n" . __('Quantity UOM: %s', $quantityUOM);
+                    $message = __('Your order has been shipped. You can use the following url for shipping tracking: <a href="%1" target="_blank">%1</a>', $shippingUrl);
+                    $message .= "\r\n" . __('Lot ID: %1', $lotId);
+                    $message .= "\r\n" . __('Quantity UOM: %1', $quantityUOM);
 
-                    $track = $this->salesOrderShipmentTrackFactory->create();
+                    $track = $this->shipmentTrackFactory->create();
                     $track
-                        ->setCarrierCode($shipment->getOrder()->getShippingCarrier()->getCarrierCode())
+                        ->setCarrierCode(Carrier::CODE)
                         ->setTitle(__('SwissPost Tracking Code'))
                         ->setNumber($shippingUrl);
 
                     $shipment
                         ->addTrack($track)
-                        ->addComment(__($message), true, true)
+                        ->addComment($message, true, true)
                         ->save();
 
-                    $shipment->sendEmail(true, $message);
+                    //$shipment->sendEmail(true, $message);
 
                     $this->logger->debug(__('Shipment %s comment added and email sent', $shipment->getIncrementId()));
                 }

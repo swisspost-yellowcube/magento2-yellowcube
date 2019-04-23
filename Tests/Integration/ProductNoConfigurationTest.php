@@ -4,12 +4,8 @@ namespace Swisspost\YellowCube\Tests\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 
-class ProductNoConfigurationTest extends \Magento\TestFramework\TestCase\AbstractController
+class ProductNoConfigurationTest extends YellowCubeTestBase
 {
-    protected function setUp()
-    {
-        parent::setUp();
-    }
 
     public static function loadFixture()
     {

@@ -133,7 +133,7 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
 
         try {
             $response = $this->getYellowCubeService()->createYCCustomerOrder($ycOrder);
-            if (!is_object($response) || !$response->isSuccess()) {
+            if (!$response->isSuccess()) {
                 $message = __(
                     'Shipment #%1 for Order #%2 could not be transmitted to YellowCube: "%3".',
                     $shipment->getIncrementId(),
@@ -156,7 +156,7 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
 
                 // Define yc_shipped to 0 to be used later in BAR process that the shipping has not been done.
                 foreach ($shipment->getItems() as $item) {
-                    $this->yellowCubeShipmentItemRepository->insertShipmentItem($shipment->getId(), $item->getEntityId(), $response->getReference());
+                    $this->yellowCubeShipmentItemRepository->insertShipmentItem($item, $response->getReference());
                 }
 
                 // Update the shipment.

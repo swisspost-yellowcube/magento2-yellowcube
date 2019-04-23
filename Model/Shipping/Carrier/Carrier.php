@@ -2,19 +2,17 @@
 
 namespace Swisspost\YellowCube\Model\Shipping\Carrier;
 
-use Magento\Framework\Xml\Security;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
-use Magento\Shipping\Model\Shipment\Request;
-use Swisspost\YellowCube\Helper\Data;
 use Swisspost\YellowCube\Model\Synchronizer;
 
-class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier
-    implements CarrierInterface
+class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements CarrierInterface
 {
+    const CODE = 'yellowcube';
+
     /**
      * @var string
      */
-    protected $_code = 'yellowcube';
+    protected $_code = self::CODE;
 
     /**
      * @var bool
@@ -124,13 +122,13 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier
     {
         $allowedMethods = array_column($this->dataHelper->getAllowedMethods(), 'allowed_methods');
 
-        $methods = array();
+        $methods = [];
         foreach ($this->dataHelper->getMethods() as $method) {
             /* @var $method Mage_Core_Model_Config_Element */
             if (in_array($method['code'], $allowedMethods)) {
                 $methods[$method['code']] = $method['label'];
             }
-        };
+        }
         return $methods;
     }
 
