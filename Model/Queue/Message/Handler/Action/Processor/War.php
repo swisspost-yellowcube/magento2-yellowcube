@@ -58,11 +58,16 @@ class War extends ProcessorAbstract implements ProcessorInterface
     }
     /**
      * @param array $data
-     * @return $this
      */
     public function process(array $data)
     {
         try {
+
+            // Only execute this query if there are any confirmed but not yet shipped shipments.
+            if (!$this->yellowCubeShipmentItemRepository->getShipmentsByStatus(YellowCubeShipmentItemRepository::STATUS_CONFIRMED)) {
+                return;
+            }
+
             $goodsIssueList = $this->getYellowCubeService()->getYCCustomerOrderReply();
 
             foreach ($goodsIssueList as $goodsIssue) {
@@ -137,6 +142,6 @@ class War extends ProcessorAbstract implements ProcessorInterface
             $this->logger->critical($e);
         }
 
-        return $this;
+        return;
     }
 }

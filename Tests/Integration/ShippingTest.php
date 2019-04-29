@@ -106,6 +106,11 @@ class ShippingTest extends YellowCubeTestBase
         $this->assertEquals('Shipment #' . $shipment->getIncrementId() . ' for Order #' . $shipment->getOrder()->getIncrementId() . ' was successfully transmitted to YellowCube. Received reference number 9999 and status message "Status text".', $sentComment->getComment());
         $this->assertEquals('YellowCube Success Status text', $confirmedComment->getComment());
         $this->assertContains('Your order has been shipped. You can use the following url for shipping tracking: <a href="http://www.post.ch/swisspost-tracking?formattedParcelCodes=7777" target="_blank">http://www.post.ch/swisspost-tracking?formattedParcelCodes=7777</a>', $shippedComment->getComment());
+
+        // Call it again, but there are no confirmed shipments anymore, so the total count of calls remains 2.
+        $synchronizer->war();
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+        $this->queueConsumer->process(1);
     }
 
     /**
@@ -255,6 +260,10 @@ class ShippingTest extends YellowCubeTestBase
 
         // Saving the shipment automatically deducts the source.
         $this->assertStock('simple1', 0, 7);
+
+        // The order is no longer active.
+        $order->setIsInProcess(false);
+        $order->save();
 
         return [$shipment, $shipmentItem];
     }

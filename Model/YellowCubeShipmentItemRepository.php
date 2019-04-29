@@ -86,6 +86,23 @@ class YellowCubeShipmentItemRepository
         return $shipmentIds;
     }
 
+    public function getShipmentsByStatus($status)
+    {
+        $connection = $this->resource->getConnection();
+        $table_name = $this->resource->getTableName(static::TABLE_NAME);
+
+        $bind = [
+            ':status' => $status,
+        ];
+
+        $result = $connection->query('SELECT DISTINCT shipment_id, reference FROM ' . $table_name . ' WHERE status = :status', $bind);
+        $shipmentIds = [];
+        while ($row = $result->fetch()) {
+            $shipmentIds[] = $row['shipment_id'];
+        }
+        return $shipmentIds;
+    }
+
     public function updateByShipmentId($shipmentId, $status, $message = NULL)
     {
         $connection = $this->resource->getConnection();
