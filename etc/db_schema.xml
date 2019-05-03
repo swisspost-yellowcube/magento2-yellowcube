@@ -25,4 +25,15 @@
             <column name="id"/>
         </constraint>
     </table>
+    <table name="yellowcube_stock" resource="default" engine="innodb" comment="YellowCube Shipment Item Status">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Role ID"/>
+        <column xsi:type="varchar" name="sku" nullable="false" length="10" default="" comment="Product SKU"/>
+        <column xsi:type="varchar" name="lot" nullable="true" length="10" default="" comment="Product Lot"/>
+        <column xsi:type="int" name="quantity" unsigned="true" nullable="false" identity="false" default="0" comment="Product Quantity"/>
+        <column xsi:type="date" name="best_before_date" />
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+    </table>
 </schema>

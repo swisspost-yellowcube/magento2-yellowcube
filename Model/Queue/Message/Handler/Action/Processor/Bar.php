@@ -61,6 +61,11 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
      */
     protected $yellowCubeShipmentItemRepository;
 
+    /**
+     * @var \Swisspost\YellowCube\Model\YellowCubeStock
+     */
+    protected $yellowCubeStock;
+
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         \Swisspost\YellowCube\Helper\Data $dataHelper,
@@ -73,7 +78,8 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         SourceItemsSaveInterface $sourceItemsSave,
         \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory $sourceItemFactory,
         \Magento\Framework\Serialize\Serializer\Json $jsonSerializer,
-        YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository
+        YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository,
+        \Swisspost\YellowCube\Model\YellowCubeStock $yellowCubeStock
     ) {
         parent::__construct($logger, $dataHelper, $clientFactory);
         $this->catalogProductFactory = $catalogProductFactory;
@@ -85,6 +91,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         $this->sourceItemFactory = $sourceItemFactory;
         $this->jsonSerializer = $jsonSerializer;
         $this->yellowCubeShipmentItemRepository = $yellowCubeShipmentItemRepository;
+        $this->yellowCubeStock = $yellowCubeStock;
     }
 
     /**
@@ -99,6 +106,8 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         $inventory = $this->getYellowCubeService()->getInventoryWithMetadata();
 
         $this->logger->info(__('YellowCube reports %1 products with a stock level', count($inventory->getArticles())));
+        $this->yellowCubeStock->updateStock($inventory->getArticles());
+
         if (!$inventory->getArticles()) {
             return;
         }
@@ -173,11 +182,11 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
          * YellowCube lot - Handle the Lot information for the product
          */
         if (!is_null($data['recentExpDate'])) { //only do lot info if there is lot info available
-            $action = $this->catalogResourceModelProductActionFactory->create();
+            /*$action = $this->catalogResourceModelProductActionFactory->create();
             $action->updateAttributes([$sku], [
                 'yc_lot_info' => $data['lotInfo'],
                 'yc_most_recent_expiration_date' => $this->convertYCDate($data['recentExpDate'])
-            ], $this->storeManager->getStore(0)->getId());
+            ], $this->storeManager->getStore(0)->getId());*/
         }
 
         /**

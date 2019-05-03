@@ -7,6 +7,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
 use Swisspost\YellowCube\Model\Synchronizer;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
+use Swisspost\YellowCube\Model\YellowCubeStock;
 use YellowCube\ART\Article;
 use YellowCube\BAR\Inventory;
 use YellowCube\BAR\QuantityUOM;
@@ -72,9 +73,14 @@ class ProductTest extends YellowCubeTestBase
      */
     public function testInventory()
     {
+        $one_week = strtotime('1 week');
+        $one_month = strtotime('1 month');
+
         $article1 = new \YellowCube\BAR\Article();
         $article1
             ->setArticleNo('simple1')
+            ->setLot('A')
+            ->setBestBeforeDate(date('YmdHi', $one_week))
             ->setQuantityUOM(new QuantityUOM(17));
 
         $article2 = new \YellowCube\BAR\Article();
@@ -82,7 +88,14 @@ class ProductTest extends YellowCubeTestBase
             ->setArticleNo('simple2')
             ->setQuantityUOM(new QuantityUOM(9));
 
-        $inventory = new Inventory([$article1, $article2], date('YmdHi', strtotime('yesterday')));
+        $article11 = new \YellowCube\BAR\Article();
+        $article11
+            ->setArticleNo('simple1')
+            ->setLot('B')
+            ->setBestBeforeDate(date('YmdHi', $one_month))
+            ->setQuantityUOM(new QuantityUOM(19));
+
+        $inventory = new Inventory([$article1, $article2, $article11], date('YmdHi', strtotime('yesterday')));
 
         $this->yellowCubeServiceMock->expects($this->atLeastOnce())
             ->method('getInventoryWithMetadata')
@@ -93,17 +106,43 @@ class ProductTest extends YellowCubeTestBase
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
 
-        $this->assertStock('simple1', 17, 17);
+        $this->assertStock('simple1', 36, 36);
         $this->assertStock('simple2', 9, 9);
+
+        // Assert the YellowCube stock.
+        /** @var \Swisspost\YellowCube\Model\YellowCubeStock $yellowCubeStock */
+        $yellowCubeStock = $this->_objectManager->get(YellowCubeStock::class);
+        $stock = $yellowCubeStock->getStock();
+        $this->assertEquals([
+            [
+                'sku' => 'simple1',
+                'lot' => 'A',
+                'quantity' => '17',
+                'best_before_date' => date('Y-m-d', $one_week),
+            ],
+            [
+                'sku' => 'simple2',
+                'lot' => null,
+                'quantity' => '9',
+                'best_before_date' => date('Y-m-d', 0),
+            ],
+            [
+                'sku' => 'simple1',
+                'lot' => 'B',
+                'quantity' => '19',
+                'best_before_date' => date('Y-m-d', $one_month),
+            ],
+        ], $stock);
 
         // Now simulate an order with a shipment item that will be
         $order = $this->createOrder([
             'items' => [
                 [
-                    'product_sku' => 'simple1',
+                    'product_sku' => 'simple2',
                     'qty' => 3,
                 ]
             ],
+            'in_progress' => false,
         ]);
 
         // Create a shipment item for simple2 to have the count subtracted.
@@ -114,7 +153,7 @@ class ProductTest extends YellowCubeTestBase
 
         /** @var \Magento\Sales\Model\Order\Shipment\Item $shipmentItem */
         $shipmentItem = $this->_objectManager->get(\Magento\Sales\Model\Order\Shipment\Item::class);
-        $shipmentItem->setProductId(2);
+        $shipmentItem->setProductId($this->productRepository->get('simple2')->getId());
         $shipmentItem->setQty(3);
         $order_items = $order->getItems();
         $shipmentItem->setOrderItem(reset($order_items));

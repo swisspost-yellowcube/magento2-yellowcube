@@ -3,6 +3,7 @@
 namespace Swisspost\YellowCube\Tests\Integration;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Inventory\Model\StockRepository;
 use Magento\InventoryApi\Api\GetSourceItemsBySkuInterface;
 use Magento\MysqlMq\Model\ResourceModel\Queue;
@@ -111,7 +112,8 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
                 'region_id' => '129',
                 'postcode' => '8048',
                 'telephone' => '1234512345'
-            ]
+            ],
+            'in_progress' => true,
         ];
 
         /** @var \Magento\Store\Model\StoreManager $storeManager */
@@ -129,7 +131,11 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
         $store = $storeManager->getStore();
         $websiteId = $storeManager->getStore()->getWebsiteId();
         $customerFactory = $this->_objectManager->get(\Magento\Customer\Model\CustomerFactory::class);
-        if (!$customerRepository->get($orderInfo['email'])) {
+
+        $customer = null;
+        try {
+            $customer = $customerRepository->get($orderInfo['email']);
+        } catch (NoSuchEntityException $e) {
             $customer = $customerFactory->create();
             $customer->setWebsiteId($websiteId)
                 ->setStore($store)
@@ -137,8 +143,8 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
                 ->setLastname($orderInfo['address']['lastname'])
                 ->setEmail($orderInfo['email']);
             $customer->save();
+            $customer = $customerRepository->get($orderInfo['email']);
         }
-        $customer = $customerRepository->get($orderInfo['email']);
 
         $quote = $quoteFactory->create();
         $quote->setStore($store);
@@ -171,7 +177,7 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
         $quote->collectTotals()->save();
         // Create Order From Quote Object
         $order = $quoteManagement->submit($quote);
-        $order->setIsInProcess(true);
+        $order->setIsInProcess($orderInfo['in_progress']);
         $order->save();
         return $order;
     }
