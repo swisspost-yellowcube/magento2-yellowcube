@@ -4,5 +4,8 @@
         <route id="yellowcube" frontName="yellowcube">
             <module name="Swisspost_YellowCube"/>
         </route>
+        <route id="reports" frontName="reports">
+            <module name="Swisspost_YellowCube" before="Magento_Reports" />
+        </route>
     </router>
 </config>

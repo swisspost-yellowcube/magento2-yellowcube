@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="adminhtml.report.grid.container">
+            <block class="Swisspost\YellowCube\Block\Adminhtml\Report\Grid" name="adminhtml.block.report.product.yellowcube.stock.grid" as="grid">
+                <arguments>
+                    <argument name="id" xsi:type="string">yellowCubeStock</argument>
+                    <argument name="use_ajax" xsi:type="string">0</argument>
+                    <argument name="dataSource" xsi:type="object">Swisspost\YellowCube\Model\StockCollection</argument>
+                </arguments>
+                <block class="Magento\Backend\Block\Widget\Grid\ColumnSet" as="grid.columnSet" name="adminhtml.block.report.product.yellowcube.stock.grid.columnSet">
+                    <block class="Magento\Backend\Block\Widget\Grid\Column" name="adminhtml.block.report.product.yellowcube.stock.grid.columnSet.name" as="name">
+                        <arguments>
+                            <argument name="header" xsi:type="string" translate="true">Product</argument>
+                            <argument name="sortable" xsi:type="string">0</argument>
+                            <argument name="index" xsi:type="string">name</argument>
+                            <argument name="header_css_class" xsi:type="string">col-product</argument>
+                            <argument name="column_css_class" xsi:type="string">col-product</argument>
+                        </arguments>
+                    </block>
+                    <block class="Magento\Backend\Block\Widget\Grid\Column" name="adminhtml.block.report.product.yellowcube.stock.grid.columnSet.sku" as="sku">
+                        <arguments>
+                            <argument name="header" xsi:type="string" translate="true">SKU</argument>
+                            <argument name="sortable" xsi:type="string">0</argument>
+                            <argument name="index" xsi:type="string">sku</argument>
+                            <argument name="header_css_class" xsi:type="string">col-sku</argument>
+                            <argument name="column_css_class" xsi:type="string">col-sku</argument>
+                        </arguments>
+                    </block>
+                    <block class="Magento\Backend\Block\Widget\Grid\Column" name="adminhtml.block.report.product.yellowcube.stock.grid.columnSet.qty" as="qty">
+                        <arguments>
+                            <argument name="header" xsi:type="string" translate="true">Stock Quantity</argument>
+                            <argument name="filter" xsi:type="string">Magento\Backend\Block\Widget\Grid\Column\Filter\Range</argument>
+                            <argument name="sortable" xsi:type="string">0</argument>
+                            <argument name="index" xsi:type="string">qty</argument>
+                            <argument name="type" xsi:type="string">number</argument>
+                            <argument name="header_css_class" xsi:type="string">col-qty</argument>
+                            <argument name="column_css_class" xsi:type="string">col-qty</argument>
+                        </arguments>
+                    </block>
+                    <block class="Magento\Backend\Block\Widget\Grid\Column" name="adminhtml.block.report.product.yellowcube.stock.grid.columnSet.lot" as="lot">
+                        <arguments>
+                            <argument name="header" xsi:type="string" translate="true">Lot</argument>
+                            <argument name="sortable" xsi:type="string">0</argument>
+                            <argument name="index" xsi:type="string">lot</argument>
+                            <argument name="header_css_class" xsi:type="string">col-lot</argument>
+                            <argument name="column_css_class" xsi:type="string">col-lot</argument>
+                        </arguments>
+                    </block>
+                </block>
+            </block>
+        </referenceBlock>
+    </body>
+</page>
