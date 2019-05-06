@@ -41,11 +41,6 @@ class ShipmentStatusSync
     protected $shipmentRepository;
 
     /**
-     * @var \Swisspost\YellowCube\Helper\Tools
-     */
-    protected $tools;
-
-    /**
      * @var \Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository
      */
     protected $yellowCubeShipmentItemRepository;
@@ -55,14 +50,12 @@ class ShipmentStatusSync
         Data $dataHelper,
         \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory,
         \Magento\Sales\Model\Order\ShipmentRepository $shipmentRepository,
-        \Swisspost\YellowCube\Helper\Tools $tools,
         YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository
     ) {
         $this->logger = $logger;
         $this->dataHelper = $dataHelper;
         $this->clientFactory = $clientFactory;
         $this->shipmentRepository = $shipmentRepository;
-        $this->tools = $tools;
         $this->yellowCubeShipmentItemRepository = $yellowCubeShipmentItemRepository;
     }
 
@@ -104,7 +97,6 @@ class ShipmentStatusSync
                     ->save();
 
             $this->logger->error($message . "\n" . print_r($response, true));
-            $this->tools->sendAdminNotification($message);
         } else {
             if ($response->isSuccess() && !$response->isPending() && !$response->isError()) {
                 $this->yellowCubeShipmentItemRepository->updateByShipmentId($shipment->getId(), YellowCubeShipmentItemRepository::STATUS_CONFIRMED);
@@ -127,21 +119,4 @@ class ShipmentStatusSync
         return $this;
     }
 
-    protected function resendMessageToQueue($data)
-    {
-        if (empty($data['try'])) {
-            $data['try'] = 1;
-        }
-        if (isset($data['try']) && $data['try'] < self::MAXTRIES) {
-            // Add again in the queue to have an up to date status
-            $this->getQueue()->send(\Zend_Json::encode([
-                'action' => Swisspost_YellowCube_Model_Synchronizer::SYNC_ORDER_UPDATE,
-                'order_id' => $data['order_id'],
-                'items' => $data['items'],
-                'shipment_increment_id' => $data['shipment_increment_id'],
-                'yc_reference' => $data['yc_reference'],
-                'try' => $data['try'] + 1
-            ]));
-        }
-    }
 }

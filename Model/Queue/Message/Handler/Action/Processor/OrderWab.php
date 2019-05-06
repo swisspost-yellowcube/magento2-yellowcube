@@ -33,11 +33,6 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
     protected $storeManager;
 
     /**
-     * @var \Swisspost\YellowCube\Helper\Tools
-     */
-    protected $tools;
-
-    /**
      * @var \Magento\Sales\Model\OrderRepository
      */
     protected $orderRepository;
@@ -64,7 +59,6 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
         \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Customer\Model\CustomerFactory $customerCustomerFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Swisspost\YellowCube\Helper\Tools $tools,
         \Magento\Sales\Model\Order\ShipmentRepository $shipmentRepository,
         \Magento\Catalog\Model\ProductRepository $productRepository,
         YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository
@@ -72,7 +66,6 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
         parent::__construct($logger, $dataHelper, $clientFactory);
         $this->storeManager = $storeManager;
         $this->orderRepository = $orderRepository;
-        $this->tools = $tools;
         $this->shipmentRepository = $shipmentRepository;
         $this->productRepository = $productRepository;
         $this->yellowCubeShipmentItemRepository = $yellowCubeShipmentItemRepository;
@@ -145,7 +138,6 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
                 $this->shipmentRepository->save($shipment);
 
                 $this->logger->error($message . "\n" . print_r($response, true));
-                $this->tools->sendAdminNotification($message);
 
             // @todo allow the user to send again to yellow cube the request from backend
             } else {

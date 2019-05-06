@@ -3,9 +3,7 @@
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
 use Magento\Sales\Api\Data\ShipmentItemInterface;
-use Magento\Sales\Api\ShipmentRepositoryInterface;
 use Magento\Sales\Api\ShipmentTrackRepositoryInterface;
-use Magento\Sales\Model\Order\ShipmentRepository;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
 use Swisspost\YellowCube\Model\Shipping\Carrier\Carrier;
@@ -128,7 +126,8 @@ class War extends ProcessorAbstract implements ProcessorInterface
                         ->addComment($message, true, true)
                         ->save();
 
-                    //$shipment->sendEmail(true, $message);
+                    // @todo Enable and test sending e-mail.
+                    $shipment->sendEmail(true, $message);
 
                     $this->logger->debug(__('Shipment %s comment added and email sent', $shipment->getIncrementId()));
                 }

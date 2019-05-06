@@ -174,10 +174,5 @@
                 </methods>
             </yellowcube>
         </carriers>
-        <system>
-            <messages>
-                <notification_email_template>system_admin_notification_email_template</notification_email_template>
-            </messages>
-        </system>
     </default>
 </config>

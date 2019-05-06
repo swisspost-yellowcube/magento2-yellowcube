@@ -2,7 +2,6 @@
 
 namespace Swisspost\YellowCube\Tests\Integration;
 
-use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
 use Swisspost\YellowCube\Model\Synchronizer;
