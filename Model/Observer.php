@@ -51,26 +51,6 @@ class Observer
         $this->generic = $generic;
     }
 
-    /**
-     * @param $productId
-     * @param $storeId
-     * @param $attributeId
-     * @param string $type
-     * @return array
-     */
-    public function getAttributeData($productId, $storeId, $attributeId, $type = 'int')
-    {
-        $resource = $this->resourceConnection;
-        $read = $resource->getConnection('catalog_read');
-
-        $select = $read->select()
-            ->from($resource->getTableName('catalog_product_entity_' . $type))
-            ->where('attribute_id = ?', $attributeId)
-            ->where('entity_id = ?', $productId)
-            ->where('store_id = ?', $storeId);
-
-        return $read->fetchRow($select);
-    }
 
 
     /**
@@ -98,84 +78,5 @@ class Observer
         $newProduct->setData('yc_sync_with_yellowcube', 0);
 
         return $this;
-    }
-
-    /**
-     * Event
-     * - sales_order_shipment_save_before
-     *
-     * @param \Magento\Framework\Event\Observer $observer
-     * @return $this
-     */
-    public function handleShipmentSaveBefore(\Magento\Framework\Event\Observer $observer)
-    {
-    }
-
-    /**
-     * @return Swisspost_YellowCube_Model_Synchronizer
-     */
-    public function getSynchronizer()
-    {
-        return Mage::getSingleton('swisspost_yellowcube/synchronizer');
-    }
-
-    /**
-     * Check whether specified attribute has been changed for given entity
-     *
-     * @param \Magento\Framework\Model\AbstractModel $entity
-     * @param string|array $key
-     * @return bool
-     */
-    public function hasDataChangedFor(\Magento\Framework\Model\AbstractModel $entity, $key)
-    {
-        if (is_array($key)) {
-            foreach ($key as $code) {
-                if ($entity->getOrigData($code) !== $entity->getData($code)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return $entity->getOrigData($key) !== $entity->getData($key);
-    }
-
-    /**
-     * @param \Magento\Catalog\Model\Product $product
-     * @return bool
-     */
-    public function isProductNew(\Magento\Catalog\Model\Product $product)
-    {
-        return $product->isObjectNew()
-        || (($product->getOrigData('sku') == '') && (strlen($product->getData('sku')) > 0));
-    }
-
-    /**
-     * Add Composer Autoloader for our YellowCube library
-     *
-     * Event
-     * - resource_get_tablename
-     * - add_spl_autoloader
-     */
-    public function addAutoloader()
-    {
-        if (!self::$shouldAdd) {
-            return;
-        }
-
-        /** @var \\Composer\Autoload\ClassLoader $loader */
-        $loader = require BP . '/vendor/autoload.php';
-        $loader->register();
-
-        self::$shouldAdd = false;
-        return $this;
-    }
-
-
-    /**
-     * @return \Magento\Framework\Session\Generic
-     */
-    protected function _getSession()
-    {
-        return Mage::getSingleton('core/session');
     }
 }

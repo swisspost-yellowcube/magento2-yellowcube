@@ -31,8 +31,7 @@ class HandleProductDelete implements \Magento\Framework\Event\ObserverInterface
         \Swisspost\YellowCube\Helper\Data $dataHelper,
         \Swisspost\YellowCube\Model\Synchronizer $synchronizer,
         \Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $catalogProductTypeConfigurable
-    )
-    {
+    ) {
         $this->dataHelper = $dataHelper;
         $this->synchronizer = $synchronizer;
         $this->catalogProductTypeConfigurable = $catalogProductTypeConfigurable;
@@ -50,7 +49,7 @@ class HandleProductDelete implements \Magento\Framework\Event\ObserverInterface
         /** @var \Magento\Catalog\Model\Product $product */
         $product = $observer->getEvent()->getDataObject();
         if ($this->dataHelper->isConfigured() && $product->getData('yc_sync_with_yellowcube')) {
-            $this->getSynchronizer()->deactivate($product);
+            $this->synchronizer->deactivate($product);
         }
     }
 }

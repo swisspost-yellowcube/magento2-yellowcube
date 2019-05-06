@@ -2,6 +2,7 @@
 
 namespace Swisspost\YellowCube\Tests\Integration;
 
+use Magento\Framework\Registry;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
 use Swisspost\YellowCube\Model\Synchronizer;
@@ -58,10 +59,23 @@ class ProductTest extends YellowCubeTestBase
             // @todo provide the language of the current description (possible values de|fr|it|en)
             ->addArticleDescription('Simple Product 1 with a very long title ', 'de');
 
-        $this->yellowCubeServiceMock->expects($this->exactly(1))
-            ->method('insertArticleMasterData')
-            ->with($article);
+        $article_delete = clone $article;
+        $article_delete->setChangeFlag(\YellowCube\ART\ChangeFlag::DEACTIVATE);
 
+        $this->yellowCubeServiceMock->expects($this->exactly(2))
+            ->method('insertArticleMasterData')
+            ->withConsecutive($article, $article_delete);
+
+        $this->queueConsumer->process(1);
+
+        // Delete the product.
+
+        $registry = $this->_objectManager->get(Registry::class);
+
+        $registry->register('isSecureArea', true);
+
+        $this->productRepository->delete($product);
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
     }
 

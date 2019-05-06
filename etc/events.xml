@@ -24,10 +24,5 @@
     <event name="catalog_model_product_duplicate">
         <observer name="catalog_product_duplicate_yellowcube" instance="Swisspost\YellowCube\Observer\handleProductDuplicate"/>
     </event>
-    <event name="resource_get_tablename">
-        <observer name="swisspost_yellowcube_autoloader" instance="Swisspost\YellowCube\Observer\addAutoloader"/>
-    </event>
-    <event name="add_spl_autoloader">
-        <observer name="swisspost_yellowcube_spl_autoloader" instance="Swisspost\YellowCube\Observer\addAutoloader"/>
-    </event>
+
 </config>
