@@ -11,7 +11,6 @@
   "homepage": "http://www.yellowcube.ch",
   "description": "Magento2 extension for YellowCube from SwissPost AG - Switzerland.",
   "require": {
-    "tecnickcom/tcpdf": "6.2.*",
     "swisspost-yellowcube/yellowcube-php": "dev-master"
   },
   "autoload": {

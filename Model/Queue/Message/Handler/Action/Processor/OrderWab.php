@@ -97,18 +97,6 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
             ->addValueAddedService(new AdditionalShippingServices($this->cutString($this->dataHelper->getAdditionalShipping($shipping_method))))
             ->setOrderDocumentsFlag(false);
 
-        // Mime-Type: X(3) pdf oder pcl (kleine Buchstaben)
-        // DocTyp: X(2) IV=Invoice/Rechnung, LS=Lieferschein, ZS=ZahlSchein
-        // @todo Update PDF stuff.
-        $doc = null;
-        /*$pdfa = $this->getPdfA($order);
-        if ($pdfa) {
-            $doc = Doc::fromFile(Doc::DOC_TYPE_LS, Doc::MIME_TYPE_PDF, $pdfa);
-            $ycOrder
-                ->addOrderDocument($doc)
-                ->setOrderDocumentsFlag(true);
-        }*/
-
         /** @var \Magento\Sales\Api\Data\ShipmentItemInterface $item */
         foreach ($shipment->getAllItems() as $key => $item) {
             $product = $this->productRepository->getById($item->getProductId());
@@ -167,17 +155,6 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
         }
 
         return $this;
-    }
-
-    /**
-     * @param \Magento\Sales\Model\Order $shipment
-     * @return mixed
-     */
-    public function getPdfA(\Magento\Sales\Model\Order $shipment)
-    {
-        /** @var Swisspost_YellowCube_Model_Sales_Order_Pdf_Shipment $shipmentPdfGenerator */
-        $shipmentPdfGenerator = Mage::getModel('swisspost_yellowcube/sales_order_pdf_shipment');
-        return $shipmentPdfGenerator->getPdf($shipment);
     }
 
     /**
