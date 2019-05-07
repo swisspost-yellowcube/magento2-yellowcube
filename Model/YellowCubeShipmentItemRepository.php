@@ -33,8 +33,8 @@ class YellowCubeShipmentItemRepository
         $connection = $this->resource->getConnection();
         $table_name = $this->resource->getTableName(static::TABLE_NAME);
         $connection->insert($table_name, [
-           'shipment_id' => $shipmentItem->getEntityId(),
-           'shipment_item_id' => $shipmentItem->getParentId(),
+           'shipment_id' => $shipmentItem->getParentId(),
+           'shipment_item_id' => $shipmentItem->getEntityId(),
            'product_id' => $shipmentItem->getProductId(),
            'reference' => $reference,
         ]);
@@ -66,7 +66,7 @@ class YellowCubeShipmentItemRepository
         return $shipmentIds;
     }
 
-    public function getUnshippedShipmentIdsByProductId($product_id, $shipped_timestamp)
+    public function getUnshippedShipmentItemIdsByProductId($product_id, $shipped_timestamp)
     {
         $connection = $this->resource->getConnection();
         $table_name = $this->resource->getTableName(static::TABLE_NAME);
@@ -76,14 +76,15 @@ class YellowCubeShipmentItemRepository
             ':confirmed' => static::STATUS_CONFIRMED,
             'shipped' => static::STATUS_SHIPPED,
             ':shipped_timestamp' => date('Y-m-d H:i:s', $shipped_timestamp),
+            ':product_id' => $product_id,
         ];
 
-        $result = $connection->query('SELECT DISTINCT shipment_id, reference FROM ' . $table_name . ' WHERE status = :sent OR status = :confirmed OR (status = :shipped AND timestamp > :shipped_timestamp)', $bind);
-        $shipmentIds = [];
+        $result = $connection->query('SELECT shipment_item_id, reference FROM ' . $table_name . ' WHERE product_id = :product_id AND (status = :sent OR status = :confirmed OR (status = :shipped AND timestamp > :shipped_timestamp))', $bind);
+        $shipmentItemIds = [];
         while ($row = $result->fetch()) {
-            $shipmentIds[] = $row['shipment_id'];
+            $shipmentItemIds[] = $row['shipment_item_id'];
         }
-        return $shipmentIds;
+        return $shipmentItemIds;
     }
 
     public function getShipmentsByStatus($status)

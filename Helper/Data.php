@@ -187,7 +187,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getDebug($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
-        return (bool)$this->getConfigValue(self::CONFIG_DEBUG, $storeId, true);
+        return (bool)$this->getConfigValue(self::CONFIG_DEBUG, $storeId);
     }
 
     /**

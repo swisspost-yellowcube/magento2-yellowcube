@@ -193,7 +193,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
          */
         $shipmentItemsCollection = $this->shipmentItemCollectionFactory->create();
         $shipmentItemsCollection
-            ->addFieldToFilter('entity_id', ['in' => $this->yellowCubeShipmentItemRepository->getUnshippedShipmentIdsByProductId($product->getId(), strtotime($inventory_timestamp))])
+            ->addFieldToFilter('entity_id', ['in' => $this->yellowCubeShipmentItemRepository->getUnshippedShipmentItemIdsByProductId($product->getId(), strtotime($inventory_timestamp))])
             ->addFieldToSelect('additional_data')
             ->addFieldToSelect('order_item_id')
             ->addFieldToSelect('qty');

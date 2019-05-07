@@ -93,9 +93,6 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
      * @param array $orderInfo
      *
      * @return \Magento\Framework\Model\AbstractExtensibleModel|\Magento\Sales\Api\Data\OrderInterface|object|null
-     *
-     * @throws \Magento\Framework\Exception\LocalizedException
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function createOrder($orderInfo)
     {
@@ -186,7 +183,6 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
      * @param string $product_sku
      * @param int $yellowcube_stock
      * @param int $magento_stock
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     protected function assertStock(string $product_sku, int $yellowcube_stock, int $magento_stock)
     {

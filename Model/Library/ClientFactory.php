@@ -5,8 +5,6 @@ namespace Swisspost\YellowCube\Model\Library;
 use Magento\Framework\Exception\LocalizedException;
 use Psr\Log\LogLevel;
 use Swisspost\YellowCube\Helper\Data;
-use YellowCube\Service;
-use YellowCube\Config;
 use YellowCube\Util\Logger\MinLevelFilterLogger;
 
 /**

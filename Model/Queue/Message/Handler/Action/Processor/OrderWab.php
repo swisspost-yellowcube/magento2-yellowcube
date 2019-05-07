@@ -15,7 +15,6 @@ use Swisspost\YellowCube\Helper\Data;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 use YellowCube\WAB\AdditionalService\AdditionalShippingServices;
 use YellowCube\WAB\AdditionalService\BasicShippingServices;
-use YellowCube\WAB\Doc;
 use YellowCube\WAB\Order;
 use YellowCube\WAB\OrderHeader;
 use YellowCube\WAB\Partner;
@@ -57,7 +56,6 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
         \Swisspost\YellowCube\Helper\Data $dataHelper,
         \Swisspost\YellowCube\Model\Library\ClientFactory $clientFactory,
         \Magento\Sales\Model\OrderRepository $orderRepository,
-        \Magento\Customer\Model\CustomerFactory $customerCustomerFactory,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Sales\Model\Order\ShipmentRepository $shipmentRepository,
         \Magento\Catalog\Model\ProductRepository $productRepository,

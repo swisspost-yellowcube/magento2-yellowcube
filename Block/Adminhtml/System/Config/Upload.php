@@ -2,8 +2,6 @@
 
 namespace Swisspost\YellowCube\Block\Adminhtml\System\Config;
 
-use Magento\Backend\Block\Widget\Button;
-use Magento\Framework\Data\Form\Element\AbstractElement;
 
 class Upload
     extends \Magento\Config\Block\System\Config\Form\Field
@@ -59,11 +57,11 @@ class Upload
     protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {
         $originalData = $element->getOriginalData();
-        $this->addData(array(
+        $this->addData([
             'button_label' => __($originalData['button_label']),
             'html_id' => $element->getHtmlId(),
             'ajax_url' => $this->backendUrlInterface->getUrl('yellowcube/sync/upload')
-        ));
+        ]);
 
         return $this->_toHtml();
     }

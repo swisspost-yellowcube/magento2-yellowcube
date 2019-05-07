@@ -153,7 +153,11 @@ class ProductTest extends YellowCubeTestBase
                 [
                     'product_sku' => 'simple2',
                     'qty' => 3,
-                ]
+                ],
+                [
+                    'product_sku' => 'simple1',
+                    'qty' => 5,
+                ],
             ],
             'in_progress' => false,
         ]);
@@ -165,15 +169,25 @@ class ProductTest extends YellowCubeTestBase
         $shipment = $this->_objectManager->get(Shipment::class);
 
         /** @var \Magento\Sales\Model\Order\Shipment\Item $shipmentItem */
-        $shipmentItem = $this->_objectManager->get(\Magento\Sales\Model\Order\Shipment\Item::class);
+        $shipmentItem = $this->_objectManager->create(\Magento\Sales\Model\Order\Shipment\Item::class);
         $shipmentItem->setProductId($this->productRepository->get('simple2')->getId());
         $shipmentItem->setQty(3);
         $order_items = $order->getItems();
-        $shipmentItem->setOrderItem(reset($order_items));
+        list($order_item1, $order_item2) = $order_items;
+        $shipmentItem->setOrderItem($order_item1);
 
         $shipment->addItem($shipmentItem);
         $shipment->setOrder($order);
         $shipment->getExtensionAttributes()->setSourceCode('YellowCube');
+
+        // Add a second shipment item for the second product.
+        $shipmentItem2 = $this->_objectManager->create(\Magento\Sales\Model\Order\Shipment\Item::class);
+        $shipmentItem2->setProductId($this->productRepository->get('simple1')->getId());
+        $shipmentItem2->setQty(5);
+        $shipmentItem2->setOrderItem($order_item2);
+
+        $shipment->addItem($shipmentItem2);
+
         $shipmentRepository->save($shipment);
 
         /** @var \Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository */
@@ -181,6 +195,7 @@ class ProductTest extends YellowCubeTestBase
 
         // Manually create the shipment item yellowcube status information.
         $yellowCubeShipmentItemRepository->insertShipmentItem($shipmentItem, 1245);
+        $yellowCubeShipmentItemRepository->insertShipmentItem($shipmentItem2, 1245);
 
         // Saving the shipment automatically deducts the source.
         $this->assertStock('simple2', 9, 6);
@@ -193,7 +208,7 @@ class ProductTest extends YellowCubeTestBase
         $this->assertStock('simple2', 9, 6);
 
         // Test with a shipment item in status confirmed.
-        $yellowCubeShipmentItemRepository->updateByShipmentId($shipmentItem->getEntityId(), YellowCubeShipmentItemRepository::STATUS_CONFIRMED);
+        $yellowCubeShipmentItemRepository->updateByShipmentId($shipmentItem->getParentId(), YellowCubeShipmentItemRepository::STATUS_CONFIRMED);
 
         // Ensure that synchronizing again keeps the stock.
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
@@ -204,7 +219,7 @@ class ProductTest extends YellowCubeTestBase
 
         // Test with a shipment item in status shipped and a new article count.
         $article2->setQuantityUOM(new QuantityUOM(8));
-        $yellowCubeShipmentItemRepository->updateByShipmentId($shipmentItem->getEntityId(), YellowCubeShipmentItemRepository::STATUS_SHIPPED);
+        $yellowCubeShipmentItemRepository->updateByShipmentId($shipmentItem->getParentId(), YellowCubeShipmentItemRepository::STATUS_SHIPPED);
 
         // The item was shipped before the inventory, so it is still removed.
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
