@@ -86,6 +86,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
                 $this->synchronizer->insert($product);
                 return;
             } else {
+                $product->setData('yc_requires_lot_management', false);
                 $this->synchronizer->deactivate($product);
                 return;
             }

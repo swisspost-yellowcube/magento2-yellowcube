@@ -86,7 +86,6 @@ class InstallData implements InstallDataInterface
 
         $ycGroupName = 'Yellow Cube';
 
-        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_sync_with_yellowcube');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_sync_with_yellowcube',
@@ -116,7 +115,6 @@ class InstallData implements InstallDataInterface
             ]
         );
 
-        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_ean_type');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_ean_type',
@@ -143,7 +141,6 @@ class InstallData implements InstallDataInterface
             ]
         );
 
-        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_ean_code');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_ean_code',
@@ -172,7 +169,6 @@ class InstallData implements InstallDataInterface
             ]
         );
 
-        //$eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY, 'yc_stock');
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
             'yc_stock',
@@ -198,6 +194,35 @@ class InstallData implements InstallDataInterface
                 'is_filterable_in_grid' => true,
                 'unique' => false,
                 'apply_to' => 'simple',
+            ]
+        );
+
+        $eavSetup->addAttribute(
+            \Magento\Catalog\Model\Product::ENTITY,
+            'yc_requires_lot_management',
+            [
+                'group' => $ycGroupName,
+                'type' => 'int',
+                'backend' => '',
+                'frontend' => '',
+                'label' => 'Lot management',
+                'input' => 'boolean',
+                'class' => '',
+                'source' => Boolean::class,
+                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'visible' => true,
+                'required' => false,
+                'user_defined' => true,
+                'searchable' => false,
+                'filterable' => false,
+                'comparable' => false,
+                'visible_on_front' => false,
+                'used_in_product_listing' => false,
+                'is_used_in_grid' => true,
+                'is_filterable_in_grid' => true,
+                'unique' => false,
+                'apply_to' => 'simple',
+                'default' => Boolean::VALUE_NO
             ]
         );
 

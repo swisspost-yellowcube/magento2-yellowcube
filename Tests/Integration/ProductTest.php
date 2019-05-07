@@ -11,6 +11,7 @@ use Swisspost\YellowCube\Model\YellowCubeStock;
 use YellowCube\ART\Article;
 use YellowCube\BAR\Inventory;
 use YellowCube\BAR\QuantityUOM;
+use YellowCube\GEN_Response;
 
 class ProductTest extends YellowCubeTestBase
 {
@@ -56,7 +57,6 @@ class ProductTest extends YellowCubeTestBase
             ->setVolume('3000.000', \YellowCube\ART\UnitsOfMeasure\ISO::CMQ)
             ->setEAN('135', 'HE')
             ->setBatchMngtReq(0)
-            // @todo provide the language of the current description (possible values de|fr|it|en)
             ->addArticleDescription('Simple Product 1 with a very long title ', 'de');
 
         $article_delete = clone $article;
@@ -69,7 +69,6 @@ class ProductTest extends YellowCubeTestBase
         $this->queueConsumer->process(1);
 
         // Delete the product.
-
         $registry = $this->_objectManager->get(Registry::class);
 
         $registry->register('isSecureArea', true);
@@ -77,6 +76,70 @@ class ProductTest extends YellowCubeTestBase
         $this->productRepository->delete($product);
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
+    }
+
+    /**
+     * @magentoDbIsolation enabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture loadFixture
+     */
+    public function testEnablingWithLot()
+    {
+        $product = $this->productRepository->get('simple1');
+        $product->setData('yc_sync_with_yellowcube', true);
+        $product->setData('yc_ean_type', 'HE');
+        $product->setData('yc_ean_code', '135');
+        $product->setData('yc_requires_lot_management', true);
+        $this->productRepository->save($product);
+
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->any())
+            ->method('isSuccess')
+            ->willReturn(TRUE);
+
+        $uom = \YellowCube\ART\UnitsOfMeasure\ISO::CMT;
+        $article = new Article();
+        $article
+            ->setChangeFlag(\YellowCube\ART\ChangeFlag::INSERT)
+            ->setPlantID('Y022')
+            ->setDepositorNo('54321')
+            ->setBaseUOM(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
+            ->setAlternateUnitISO(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
+            ->setArticleNo('simple1')
+            ->setNetWeight(
+                '.950',
+                \YellowCube\ART\UnitsOfMeasure\ISO::KGM
+            )
+            ->setGrossWeight('1.000', \YellowCube\ART\UnitsOfMeasure\ISO::KGM)
+            ->setLength('15.000', $uom)
+            ->setWidth('10.000', $uom)
+            ->setHeight('20.000', $uom)
+            ->setVolume('3000.000', \YellowCube\ART\UnitsOfMeasure\ISO::CMQ)
+            ->setEAN('135', 'HE')
+            ->setBatchMngtReq(1)
+            ->addArticleDescription('Simple Product 1 with a very long title ', 'de');
+
+        $article_disable = clone $article;
+        $article_disable->setChangeFlag(\YellowCube\ART\ChangeFlag::DEACTIVATE);
+
+        $this->yellowCubeServiceMock->expects($this->exactly(2))
+            ->method('insertArticleMasterData')
+            ->withConsecutive($article, $article_disable)
+            ->willReturn($response);
+
+        $this->queueConsumer->process(1);
+
+        // Disable the product.
+        $product = $this->productRepository->getById($product->getId());
+        $product->setData('yc_sync_with_yellowcube', false);
+        $this->productRepository->save($product);
+        $this->queueConsumer->process(1);
+
+        $product = $this->productRepository->getById($product->getId());
+        $this->assertEquals(0, $product->getData('yc_requires_lot_management'));
+
     }
 
     /**

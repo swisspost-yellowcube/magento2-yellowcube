@@ -59,7 +59,7 @@ class ClientFactory
         if (!$this->dataHelper->isConfigured()) {
             throw new LocalizedException(
                 __(
-                    'YellowCube Extension is not properly configured. Please <a href="%s">configure</a> it before to continue.',
+                    'YellowCube Extension is not properly configured. Please <a href="%1">configure</a> it before to continue.',
                     $this->urlBuilder->getUrl('system_config/edit/section/carriers')
                 )
             );
@@ -73,7 +73,7 @@ class ClientFactory
         );
 
         // Certificate handling
-        if (in_array($this->dataHelper->getOperationMode(), array('P', 'T', 'D'))) {
+        if (in_array($this->dataHelper->getOperationMode(), ['P', 'T', 'D'])) {
             if (!empty($certificatePath)) {
                 $config->setCertificateFilePath($certificatePath, $certificatePassword);
             }

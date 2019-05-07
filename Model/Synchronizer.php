@@ -62,8 +62,7 @@ class Synchronizer
 
     public function action(\Magento\Catalog\Model\Product $product, $action = self::SYNC_ACTION_INSERT)
     {
-        $this->publisher->publish('yellowcube.sync', $this->jsonSerializer->serialize([
-            'action' => $action,
+        $this->publish($action, [
             'website_id' => $product->getWebsiteId(),
             'plant_id' => $this->dataHelper->getPlantId(),
             'deposit_number' => $this->dataHelper->getDepositorNumber(),
@@ -80,7 +79,7 @@ class Synchronizer
             'product_ean' => $product->getData('yc_ean_code'),
             'product_ean_type' => $product->getData('yc_ean_type'),
             'product_lot_management' => $product->getData('yc_requires_lot_management'),
-        ]));
+        ]);
 
         return $this;
     }

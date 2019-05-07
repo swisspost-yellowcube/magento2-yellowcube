@@ -2,13 +2,15 @@
 
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
-use Swisspost\YellowCube\Model\Dimension\Uom\Attribute\Source;
+use Magento\Framework\Exception\LocalizedException;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorAbstract;
 use Swisspost\YellowCube\Model\Queue\Message\Handler\Action\ProcessorInterface;
+use YellowCube\ART\ChangeFlag;
+use YellowCube\ART\UnitsOfMeasure\ISO;
 
 class Insert extends ProcessorAbstract implements ProcessorInterface
 {
-    protected $_changeFlag = \YellowCube\ART\ChangeFlag::INSERT;
+    protected $_changeFlag = ChangeFlag::INSERT;
 
     /**
      * @param array $data
@@ -17,25 +19,23 @@ class Insert extends ProcessorAbstract implements ProcessorInterface
      */
     public function process(array $data)
     {
-        $uom = $data['product_uom'] === Source::VALUE_MTR
-            ? \YellowCube\ART\UnitsOfMeasure\ISO::MTR
-            : \YellowCube\ART\UnitsOfMeasure\ISO::CMT;
+        $uom = $data['product_uom'] === ISO::CMT;
 
-        $uomq = ($uom == \YellowCube\ART\UnitsOfMeasure\ISO::MTR) ? \YellowCube\ART\UnitsOfMeasure\ISO::MTQ : \YellowCube\ART\UnitsOfMeasure\ISO::CMQ;
+        $uomq = ISO::CMQ;
 
         $article = new \YellowCube\ART\Article();
         $article
             ->setChangeFlag($this->_changeFlag)
             ->setPlantID($data['plant_id'])
             ->setDepositorNo($data['deposit_number'])
-            ->setBaseUOM(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
-            ->setAlternateUnitISO(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
+            ->setBaseUOM(ISO::PCE)
+            ->setAlternateUnitISO(ISO::PCE)
             ->setArticleNo($this->formatSku($data['product_sku']))
             ->setNetWeight(
                 $this->formatUom($data['product_weight'] * $data['tara_factor']),
-                \YellowCube\ART\UnitsOfMeasure\ISO::KGM
+                ISO::KGM
             )
-            ->setGrossWeight($this->formatUom($data['product_weight']), \YellowCube\ART\UnitsOfMeasure\ISO::KGM)
+            ->setGrossWeight($this->formatUom($data['product_weight']), ISO::KGM)
             ->setLength($this->formatUom($data['product_length']), $uom)
             ->setWidth($this->formatUom($data['product_width']), $uom)
             ->setHeight($this->formatUom($data['product_height']), $uom)
@@ -50,7 +50,7 @@ class Insert extends ProcessorAbstract implements ProcessorInterface
         if (!is_object($response) || !$response->isSuccess()) {
             $message = __('%s has an error with the insertArticleMasterData() Service', $data['product_sku']);
             $this->logger->error($message . print_r($response, true));
-            throw new \Magento\Framework\Exception\LocalizedException($message);
+            throw new LocalizedException($message);
         } else {
             if ($this->dataHelper->getDebug()) {
                 $this->logger->debug(print_r($response, true));
