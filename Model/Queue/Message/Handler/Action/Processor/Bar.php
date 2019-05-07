@@ -170,6 +170,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {
             // insert your error handling here
             $this->logger->info(__('Product %1 inventory cannot be synchronized from YellowCube into Magento because it does not exist.', $sku));
+            return;
         }
 
         if ($product->getData('yc_stock') != $data['qty']) {

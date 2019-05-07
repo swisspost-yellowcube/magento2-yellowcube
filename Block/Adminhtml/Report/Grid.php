@@ -28,5 +28,4 @@ class Grid extends \Magento\Backend\Block\Widget\Grid
         $this->stockCollection = $stockCollection;
         parent::__construct($context, $backendHelper, $data);
     }
-
 }

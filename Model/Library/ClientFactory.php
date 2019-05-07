@@ -58,8 +58,11 @@ class ClientFactory
 
         if (!$this->dataHelper->isConfigured()) {
             throw new LocalizedException(
-                __('YellowCube Extension is not properly configured. Please <a href="%s">configure</a> it before to continue.',
-                    $this->urlBuilder->getUrl('system_config/edit/section/carriers')));
+                __(
+                    'YellowCube Extension is not properly configured. Please <a href="%s">configure</a> it before to continue.',
+                    $this->urlBuilder->getUrl('system_config/edit/section/carriers')
+                )
+            );
         }
 
         $config = new \YellowCube\Config(

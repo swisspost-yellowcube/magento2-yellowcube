@@ -37,8 +37,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
         \Swisspost\YellowCube\Helper\Data $dataHelper,
         \Swisspost\YellowCube\Model\Synchronizer $synchronizer,
         \Magento\ConfigurableProduct\Model\ResourceModel\Product\Type\Configurable $catalogProductTypeConfigurable
-    )
-    {
+    ) {
         $this->dataHelper = $dataHelper;
         $this->synchronizer = $synchronizer;
         $this->catalogProductTypeConfigurable = $catalogProductTypeConfigurable;

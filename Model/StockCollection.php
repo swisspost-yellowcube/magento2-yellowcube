@@ -36,5 +36,4 @@ class StockCollection implements \IteratorAggregate, \Magento\Framework\App\Reso
     {
         $foo = 1;
     }
-
 }

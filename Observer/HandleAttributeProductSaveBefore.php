@@ -58,11 +58,10 @@ class HandleAttributeProductSaveBefore implements \Magento\Framework\Event\Obser
             /**
              * If length/width/height in product is null => do nothing and doesn't allow to change the value
              */
-            if (empty ($productYCLength) && empty($productYCWidth) && empty($productYCHeight)
+            if (empty($productYCLength) && empty($productYCWidth) && empty($productYCHeight)
                 && empty($attributesData['ts_dimensions_length']) && empty($attributesData['ts_dimensions_width']) && empty($attributesData['ts_dimensions_height'])
                 && !empty($attributesData['yc_sync_with_yellowcube'])
             ) {
-
                 if ((int) $productYCSync['value'] !== (int) $attributesData['yc_sync_with_yellowcube']) {
                     // Prepare to revert the changes - Note: cannot modify $productIds per reference as it is Mage_Catalog_Model_Product_Action::updateAttributes
                     $this->_attributeProductIds[$productId]['yc_sync_with_yellowcube'] = $productYCSync;
@@ -80,7 +79,7 @@ class HandleAttributeProductSaveBefore implements \Magento\Framework\Event\Obser
                             $this->getSynchronizer()->insert($this->catalogProductFactory->create()->load($productId));
                             break;
                     }
-                } else if ((int) $productYCSync['value']) {
+                } elseif ((int) $productYCSync['value']) {
                     // We handle size and weight changes if YC is enabled
                     if ((isset($attributesData['ts_dimensions_length']) && $productYCLength['value'] != $attributesData['ts_dimensions_length'])
                         || (isset($attributesData['ts_dimensions_width']) && $productYCWidth['value'] != $attributesData['ts_dimensions_width'])

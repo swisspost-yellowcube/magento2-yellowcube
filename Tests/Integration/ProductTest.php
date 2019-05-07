@@ -238,6 +238,5 @@ class ProductTest extends YellowCubeTestBase
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
         $this->assertStock('simple2', 8, 8);
-
     }
 }

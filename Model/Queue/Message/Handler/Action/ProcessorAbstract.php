@@ -95,5 +95,4 @@ abstract class ProcessorAbstract implements ProcessorInterface
 
         return false;
     }
-
 }

@@ -60,7 +60,6 @@ class War extends ProcessorAbstract implements ProcessorInterface
     public function process(array $data)
     {
         try {
-
             // Only execute this query if there are any confirmed but not yet shipped shipments.
             if (!$this->yellowCubeShipmentItemRepository->getShipmentsByStatus(YellowCubeShipmentItemRepository::STATUS_CONFIRMED)) {
                 return;
@@ -84,6 +83,8 @@ class War extends ProcessorAbstract implements ProcessorInterface
                     $shipmentItems = $shipment->getItemsCollection();
                     $hash = [];
 
+                    $lotId = null;
+                    $quantityUOM = null;
                     try {
                         foreach ($customerOrderDetails as $customerOrderDetail) {
                             $this->logger->debug('Debug $customerOrderDetail ' . print_r($customerOrderDetail, true));
@@ -94,7 +95,7 @@ class War extends ProcessorAbstract implements ProcessorInterface
                                 // $this->logger->debug('Debug $item ' . print_r($item, true));
 
                                 if ($customerOrderDetail->getArticleNo() == $item->getSku() && !isset($hash[$item->getEntityId()])) {
-                                    $this->yellowCubeShipmentItemRepository->updateByShipmentId($item->getEntityId(), YellowCubeShipmentItemRepository::STATUS_SHIPPED);
+                                    $this->yellowCubeShipmentItemRepository->updateByShipmentItemId($item->getEntityId(), YellowCubeShipmentItemRepository::STATUS_SHIPPED);
                                     $hash[$item->getEntityId()] = true;
                                 }
                             }
@@ -112,8 +113,12 @@ class War extends ProcessorAbstract implements ProcessorInterface
 
                     // Add a message to the order history incl. link to shipping infos
                     $message = __('Your order has been shipped. You can use the following url for shipping tracking: <a href="%1" target="_blank">%1</a>', $shippingUrl);
-                    $message .= "\r\n" . __('Lot ID: %1', $lotId);
-                    $message .= "\r\n" . __('Quantity UOM: %1', $quantityUOM);
+                    if ($lotId) {
+                        $message .= "\r\n" . __('Lot ID: %1', $lotId);
+                    }
+                    if ($quantityUOM) {
+                        $message .= "\r\n" . __('Quantity UOM: %1', $quantityUOM);
+                    }
 
                     $track = $this->shipmentTrackFactory->create();
                     $track

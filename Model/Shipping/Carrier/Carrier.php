@@ -39,6 +39,11 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
      */
     protected $dataHelper;
 
+    /**
+     * @var \Swisspost\YellowCube\Model\Synchronizer
+     */
+    protected $synchronizer;
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory $rateErrorFactory,
@@ -124,7 +129,6 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
 
         $methods = [];
         foreach ($this->dataHelper->getMethods() as $method) {
-            /* @var $method Mage_Core_Model_Config_Element */
             if (in_array($method['code'], $allowedMethods)) {
                 $methods[$method['code']] = $method['label'];
             }

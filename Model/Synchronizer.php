@@ -15,11 +15,6 @@ class Synchronizer
     const SYNC_WAR                          = 'War';
 
     /**
-     * @var \Zend_Queue
-     */
-    protected $_queue;
-
-    /**
      * @var \Swisspost\YellowCube\Helper\Data
      */
     protected $dataHelper;

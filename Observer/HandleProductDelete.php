@@ -14,7 +14,7 @@ class HandleProductDelete implements \Magento\Framework\Event\ObserverInterface
     protected $dataHelper;
 
     /**
-     * @var Synchronizer
+     * @var \Swisspost\YellowCube\Model\Synchronizer
      */
     protected $synchronizer;
 

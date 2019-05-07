@@ -85,12 +85,12 @@ class ShipmentStatusSync
 
         if (!is_object($response) || !$response->isSuccess()) {
             $message = __(
-                    'Shipment #%s Status for Order #%s with YellowCube Transaction ID could not received from YellowCube: "%s".',
-                    $shipment->getIncrementId(),
-                    $shipment->getOrderId(),
-                    $reference,
-                    $response->getStatusText()
-                );
+                'Shipment #%s Status for Order #%s with YellowCube Transaction ID could not received from YellowCube: "%s".',
+                $shipment->getIncrementId(),
+                $shipment->getOrderId(),
+                $reference,
+                $response->getStatusText()
+            );
 
             $shipment
                     ->addComment($message, false, false)
@@ -118,5 +118,4 @@ class ShipmentStatusSync
 
         return $this;
     }
-
 }

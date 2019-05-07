@@ -45,8 +45,7 @@ class HandleShipmentSaveAfter implements \Magento\Framework\Event\ObserverInterf
         \Swisspost\YellowCube\Model\Synchronizer $synchronizer,
         \Magento\Shipping\Model\ShippingFactory $shippingFactory,
         \Magento\Shipping\Model\CarrierFactory $carrierFactory
-    )
-    {
+    ) {
         $this->dataHelper = $dataHelper;
         $this->synchronizer = $synchronizer;
         $this->shippingFactory = $shippingFactory;

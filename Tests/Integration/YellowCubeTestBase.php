@@ -199,5 +199,4 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
         }
         $this->assertEquals(['default' => 0, 'YellowCube' => $magento_stock], $quantity_by_source);
     }
-
 }

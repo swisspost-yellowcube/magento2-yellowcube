@@ -104,10 +104,17 @@ class YellowCubeShipmentItemRepository
         return $shipmentIds;
     }
 
-    public function updateByShipmentId($shipmentId, $status, $message = NULL)
+    public function updateByShipmentId($shipmentId, $status, $message = null)
     {
         $connection = $this->resource->getConnection();
         $table_name = $this->resource->getTableName(static::TABLE_NAME);
         $connection->update($table_name, ['status' => $status, 'message' => $message], 'shipment_id = ' . ((int) $shipmentId));
+    }
+
+    public function updateByShipmentItemId($shipmentItemId, $status, $message = null)
+    {
+        $connection = $this->resource->getConnection();
+        $table_name = $this->resource->getTableName(static::TABLE_NAME);
+        $connection->update($table_name, ['status' => $status, 'message' => $message], 'shipment_item_id = ' . ((int) $shipmentItemId));
     }
 }

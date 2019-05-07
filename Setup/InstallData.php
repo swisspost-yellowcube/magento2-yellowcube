@@ -226,6 +226,5 @@ class InstallData implements InstallDataInterface
             $stockSourceLink->setPriority(1);
             $this->stockSourceLinksSave->execute([$stockSourceLink]);
         }
-
     }
 }

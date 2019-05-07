@@ -42,7 +42,6 @@ class Download extends \Magento\Backend\App\Action implements \Magento\Framework
         try {
             $this->synchronizer->bar();
             $response->setData(1);
-
         } catch (\Exception $e) {
             $this->logger->critical($e);
             $response->setData(0);

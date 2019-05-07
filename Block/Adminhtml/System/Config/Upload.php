@@ -3,8 +3,7 @@
 namespace Swisspost\YellowCube\Block\Adminhtml\System\Config;
 
 
-class Upload
-    extends \Magento\Config\Block\System\Config\Form\Field
+class Upload extends \Magento\Config\Block\System\Config\Form\Field
 {
 
     /**

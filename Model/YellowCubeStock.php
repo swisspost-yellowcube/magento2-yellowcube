@@ -67,5 +67,4 @@ class YellowCubeStock
         }
         return $shipmentIds;
     }
-
 }

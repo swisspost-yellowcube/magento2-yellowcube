@@ -1,31 +1,15 @@
 <?php
 
-namespace Swisspost\YellowCube\Model\Ean\Type;
+namespace Swisspost\YellowCube\Model\Dimension\Uom\Attribute;
 
-use Swisspost\YellowCube\Helper\Data;
 
 class Source extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
 {
-
-
     /**
-     * @var \Swisspost\YellowCube\Helper\Data
+     * Option values
      */
-    protected $dataHelper;
-
-    /**
-     * @var array
-     */
-    protected $_attributeProductIds;
-
-    /**
-     * HandleProductSaveBefore constructor.
-     * @param Data $dataHelper
-     */
-    public function __construct(Data $dataHelper)
-    {
-        $this->dataHelper = $dataHelper;
-    }
+    const VALUE_MTR = 'mtr';
+    const VALUE_CMT = 'cmt';
 
     /**
      * Retrieve all options array
@@ -34,14 +18,18 @@ class Source extends \Magento\Eav\Model\Entity\Attribute\Source\AbstractSource
      */
     public function getAllOptions()
     {
+        $productTypes = Mage::getConfig()->getNode('global/catalog/product/type')->asArray();
 
-        if (is_null($this->_options)) {
+        if (is_null($this->_options))
+        {
             $this->_options = array();
-            foreach ($this->dataHelper->getEanTypes() as $key => $elements) {
-                $this->_options[] = [
-                    'label' => __($elements['label']),
-                    'value' => strtoupper($key)
-                ];
+            foreach(Mage::getConfig()->getNode('global/carriers/yellowcube/dimension/uom')->asArray() as $key => $elements)
+            {
+                $this->_options[] =
+                    array(
+                        'label' => __($elements['label']),
+                        'value' => $key
+                    );
             }
         }
         return $this->_options;

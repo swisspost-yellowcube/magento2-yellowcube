@@ -43,7 +43,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * @var bool
      */
-    protected $allowLockedAttributeChanges = FALSE;
+    protected $allowLockedAttributeChanges = false;
 
     /**
      * Data constructor.
@@ -230,7 +230,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if (empty($senderId) || empty($endpoint) || empty($operationMode)
             || (in_array(
                 $this->getOperationMode($storeId),
-                    ['P']
+                ['P']
             ) && empty($certificatePath) && empty($certificatePassword))
         ) {
             return false;
@@ -344,8 +344,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * @return bool
      *   Whether changes are allowed.
      */
-    public function allowLockedAttributeChanges($allow = NULL) {
-        if ($allow !== NULL) {
+    public function allowLockedAttributeChanges($allow = null)
+    {
+        if ($allow !== null) {
             $this->allowLockedAttributeChanges = $allow;
         }
         return $this->allowLockedAttributeChanges;
