@@ -59,6 +59,37 @@ In Menu `Stores > Stocks`, create a Stock that contains at least the automatical
 
 @TODO
 
+### Custom shipping methods
+
+The known shipping methods can be extend in app/etc/config.php, Example:
+
+```
+    'system' => [
+        'default' => [
+            'carriers' => [
+                'yellowcube' => [
+                    'methods' => [
+                        'eco' => [
+                            'label' => 'PostPac Economy CHANGED',
+                            'code' => 'ECO',
+                        ],
+                        'extra' => [
+                            'label' => 'Extra new option',
+                            'code' => 'ECO EXTRA',
+                            'real_code' => 'ECO',
+                            'additional' => 'EXTRA',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+```
+
+It is also possible to export the whole configuration and then adjust it. See 
+
+
 ## Automated tests
 
 Tu run tests, follow the steps on
