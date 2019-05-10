@@ -1,21 +1,12 @@
 <?php
 
-/**
- * Liip AG
- *
- * @author      Sylvain Rayé <sylvain.raye at diglin.com>
- * @category    yellowcube
- * @package     Swisspost_yellowcube
- * @copyright   Copyright (c) 2015 Liip AG
- */
-
 namespace Swisspost\YellowCube\Model;
 
 use Magento\Sales\Api\Data\ShipmentInterface;
 use Swisspost\YellowCube\Helper\Data;
 
 /**
- * Class Swisspost_YellowCube_Model_Queue_Message_Handler_Action_Processor_Order
+ * Checks for confirmations about submitted shipments to YellowCube.
  */
 class ShipmentStatusSync
 {

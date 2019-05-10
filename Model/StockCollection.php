@@ -2,9 +2,9 @@
 
 namespace Swisspost\YellowCube\Model;
 
-/**
- */
-class StockCollection implements \IteratorAggregate, \Magento\Framework\App\ResourceConnection\SourceProviderInterface
+use Magento\Framework\Data\Collection;
+
+class StockCollection extends Collection implements \IteratorAggregate, \Magento\Framework\App\ResourceConnection\SourceProviderInterface
 {
 
     public function getMainTable()
@@ -32,8 +32,4 @@ class StockCollection implements \IteratorAggregate, \Magento\Framework\App\Reso
         $foo = 1;
     }
 
-    public function getIterator()
-    {
-        $foo = 1;
-    }
 }

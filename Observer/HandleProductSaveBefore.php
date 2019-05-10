@@ -69,6 +69,10 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
             }
         }
 
+        if ($product->getData('yc_ignore')) {
+            return;
+        }
+
         /**
          * Scenario
          *

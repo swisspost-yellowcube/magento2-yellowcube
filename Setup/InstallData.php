@@ -226,6 +226,62 @@ class InstallData implements InstallDataInterface
             ]
         );
 
+        $eavSetup->addAttribute(
+            \Magento\Catalog\Model\Product::ENTITY,
+            'yc_reference',
+            [
+                'group' => $ycGroupName,
+                'type' => 'varchar',
+                'backend' => '',
+                'frontend' => '',
+                'label' => 'YC Reference',
+                'input' => 'text',
+                'class' => '',
+                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'visible' => false,
+                'required' => false,
+                'user_defined' => false,
+                'default' => '',
+                'searchable' => false,
+                'filterable' => true,
+                'comparable' => false,
+                'visible_on_front' => false,
+                'used_in_product_listing' => true,
+                'is_used_in_grid' => true,
+                'is_filterable_in_grid' => true,
+                'unique' => false,
+                'apply_to' => 'simple',
+            ]
+        );
+
+        $eavSetup->addAttribute(
+            \Magento\Catalog\Model\Product::ENTITY,
+            'yc_response',
+            [
+                'group' => $ycGroupName,
+                'type' => 'varchar',
+                'backend' => '',
+                'frontend' => '',
+                'label' => 'YC Response',
+                'input' => 'text',
+                'class' => '',
+                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'visible' => false,
+                'required' => false,
+                'user_defined' => false,
+                'default' => '',
+                'searchable' => false,
+                'filterable' => true,
+                'comparable' => false,
+                'visible_on_front' => false,
+                'used_in_product_listing' => true,
+                'is_used_in_grid' => true,
+                'is_filterable_in_grid' => true,
+                'unique' => false,
+                'apply_to' => 'simple',
+            ]
+        );
+
         try {
             $this->sourceRepository->get('YellowCube');
         } catch (\Magento\Framework\Exception\NoSuchEntityException $e) {

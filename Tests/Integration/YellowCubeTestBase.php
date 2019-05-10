@@ -186,11 +186,7 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
      */
     protected function assertStock(string $product_sku, int $yellowcube_stock, int $magento_stock)
     {
-        // @todo the product repository seems to have multiple instances that can get out of sync, ensure we have
-        //   a fresh instance.
-        $this->productRepository = $this->_objectManager->create(ProductRepositoryInterface::class);
-
-        $product = $this->productRepository->get($product_sku);
+        $product = $this->reloadProduct($product_sku);
         $this->assertEquals($yellowcube_stock, $product->getData('yc_stock'));
         $sourceItems = $this->sourceItemsBySku->execute($product_sku);
         $quantity_by_source = [];
@@ -198,5 +194,18 @@ class YellowCubeTestBase extends \Magento\TestFramework\TestCase\AbstractControl
             $quantity_by_source[$sourceItem->getSourceCode()] = $sourceItem->getQuantity();
         }
         $this->assertEquals(['default' => 0, 'YellowCube' => $magento_stock], $quantity_by_source);
+    }
+
+    /**
+     * @param string $product_sku
+     * @return \Magento\Catalog\Api\Data\ProductInterface
+     */
+    protected function reloadProduct(string $product_sku): \Magento\Catalog\Api\Data\ProductInterface
+    {
+        // @todo the product repository seems to have multiple instances that can get out of sync, ensure we have
+        //   a fresh instance.
+        $this->productRepository = $this->_objectManager->create(ProductRepositoryInterface::class);
+
+        return $this->productRepository->get($product_sku);
     }
 }

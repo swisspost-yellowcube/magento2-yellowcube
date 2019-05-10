@@ -5,6 +5,7 @@ namespace Swisspost\YellowCube\Tests\Integration;
 use Magento\Framework\Registry;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
+use Swisspost\YellowCube\Model\ArticleResponseSync;
 use Swisspost\YellowCube\Model\Synchronizer;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 use Swisspost\YellowCube\Model\YellowCubeStock;
@@ -15,7 +16,6 @@ use YellowCube\GEN_Response;
 
 class ProductTest extends YellowCubeTestBase
 {
-
     public static function loadFixture()
     {
         include __DIR__ . '/../_files/config.php';
@@ -27,7 +27,7 @@ class ProductTest extends YellowCubeTestBase
      * @magentoAppIsolation enabled
      * @magentoDataFixture loadFixture
      */
-    public function testEnabling()
+    public function testEnablingSuccess()
     {
         $product = $this->productRepository->get('simple1');
         $product->setData('yc_sync_with_yellowcube', true);
@@ -36,6 +36,14 @@ class ProductTest extends YellowCubeTestBase
         $this->productRepository->save($product);
 
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->any())
+            ->method('isSuccess')
+            ->willReturn(true);
+        $response->expects($this->any())
+            ->method('getReference')
+            ->willReturn(23456);
 
         $uom = \YellowCube\ART\UnitsOfMeasure\ISO::CMT;
         $article = new Article();
@@ -64,9 +72,47 @@ class ProductTest extends YellowCubeTestBase
 
         $this->yellowCubeServiceMock->expects($this->exactly(2))
             ->method('insertArticleMasterData')
-            ->withConsecutive($article, $article_delete);
+            ->withConsecutive($article, $article_delete)
+            ->willReturn($response);
 
         $this->queueConsumer->process(1);
+
+        $product = $this->reloadProduct($product->getSku());
+        $this->assertEquals(23456, $product->getData('yc_reference'));
+
+        // Check the response, first a pending response, then a success.
+        $pending_response = $this->createMock(GEN_Response::class);
+        $pending_response->expects($this->atLeastOnce())
+            ->method('isPending')
+            ->willReturn(true);
+
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->atLeastOnce())
+            ->method('isError')
+            ->willReturn(false);
+        $response->expects($this->atLeastOnce())
+            ->method('isPending')
+            ->willReturn(false);
+
+        $this->yellowCubeServiceMock->expects($this->exactly(2))
+            ->method('getInsertArticleMasterDataStatus')
+            ->with(23456)
+            ->willReturnOnConsecutiveCalls($pending_response, $response);
+
+        /** @var \Swisspost\YellowCube\Model\ArticleResponseSync $article_response_sync */
+        $article_response_sync = $this->_objectManager->get(ArticleResponseSync::class);
+        $article_response_sync->processArticles();
+
+        $product = $this->reloadProduct($product->getSku());
+        $this->assertEquals(23456, $product->getData('yc_reference'));
+
+        $article_response_sync->processArticles();
+
+        $product = $this->reloadProduct($product->getSku());
+        $this->assertNull($product->getData('yc_reference'));
+
+        // Syncing again should not result in a third call to getInsertArticleMasterDataStatus().
+        $article_response_sync->processArticles();
 
         // Delete the product.
         $registry = $this->_objectManager->get(Registry::class);
@@ -76,6 +122,91 @@ class ProductTest extends YellowCubeTestBase
         $this->productRepository->delete($product);
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
+    }
+
+    /**
+     * @magentoDbIsolation enabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture loadFixture
+     */
+    public function testEnablingError()
+    {
+        $product = $this->productRepository->get('simple1');
+        $product->setData('yc_sync_with_yellowcube', true);
+        $product->setData('yc_ean_type', 'HE');
+        $product->setData('yc_ean_code', '135');
+        $this->productRepository->save($product);
+
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->any())
+            ->method('isSuccess')
+            ->willReturn(true);
+        $response->expects($this->any())
+            ->method('getReference')
+            ->willReturn(23456);
+
+        $uom = \YellowCube\ART\UnitsOfMeasure\ISO::CMT;
+        $article = new Article();
+        $article
+            ->setChangeFlag(\YellowCube\ART\ChangeFlag::INSERT)
+            ->setPlantID('Y022')
+            ->setDepositorNo('54321')
+            ->setBaseUOM(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
+            ->setAlternateUnitISO(\YellowCube\ART\UnitsOfMeasure\ISO::PCE)
+            ->setArticleNo('simple1')
+            ->setNetWeight(
+                '.950',
+                \YellowCube\ART\UnitsOfMeasure\ISO::KGM
+            )
+            ->setGrossWeight('1.000', \YellowCube\ART\UnitsOfMeasure\ISO::KGM)
+            ->setLength('15.000', $uom)
+            ->setWidth('10.000', $uom)
+            ->setHeight('20.000', $uom)
+            ->setVolume('3000.000', \YellowCube\ART\UnitsOfMeasure\ISO::CMQ)
+            ->setEAN('135', 'HE')
+            ->setBatchMngtReq(0)
+            ->addArticleDescription('Simple Product 1 with a very long title ', 'de');
+
+        $article_delete = clone $article;
+        $article_delete->setChangeFlag(\YellowCube\ART\ChangeFlag::DEACTIVATE);
+
+        $this->yellowCubeServiceMock->expects($this->exactly(1))
+            ->method('insertArticleMasterData')
+            ->withConsecutive($article, $article_delete)
+            ->willReturn($response);
+
+        $this->queueConsumer->process(1);
+
+        $product = $this->reloadProduct($product->getSku());
+        $this->assertEquals(23456, $product->getData('yc_reference'));
+
+        // Return an error response.
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->atLeastOnce())
+            ->method('isError')
+            ->willReturn(true);
+        $response->expects($this->atLeastOnce())
+            ->method('isPending')
+            ->willReturn(false);
+        $response->expects($this->atLeastOnce())
+            ->method('getStatusText')
+            ->willReturn('Not accepted because article is too big.');
+
+        $this->yellowCubeServiceMock->expects($this->once())
+            ->method('getInsertArticleMasterDataStatus')
+            ->with(23456)
+            ->willReturn($response);
+
+        /** @var \Swisspost\YellowCube\Model\ArticleResponseSync $article_response_sync */
+        $article_response_sync = $this->_objectManager->get(ArticleResponseSync::class);
+        $article_response_sync->processArticles();
+
+        $product = $this->reloadProduct($product->getSku());
+        $this->assertNull($product->getData('yc_reference'));
+        $this->assertEquals('Not accepted because article is too big.', $product->getData('yc_response'));
+        $this->assertEquals(0, $product->getData('yc_sync_with_yellowcube'));
     }
 
     /**
@@ -97,7 +228,7 @@ class ProductTest extends YellowCubeTestBase
         $response = $this->createMock(GEN_Response::class);
         $response->expects($this->any())
             ->method('isSuccess')
-            ->willReturn(TRUE);
+            ->willReturn(true);
 
         $uom = \YellowCube\ART\UnitsOfMeasure\ISO::CMT;
         $article = new Article();
@@ -139,7 +270,6 @@ class ProductTest extends YellowCubeTestBase
 
         $product = $this->productRepository->getById($product->getId());
         $this->assertEquals(0, $product->getData('yc_requires_lot_management'));
-
     }
 
     /**

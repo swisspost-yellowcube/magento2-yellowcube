@@ -10,5 +10,8 @@
         <job name="yc_shipment_sync" instance="Swisspost\YellowCube\Model\ShipmentStatusSync" method="processPendingShipments">
             <schedule>*/5 * * * *</schedule>
         </job>
+        <job name="yc_article_response_sync" instance="Swisspost\YellowCube\Model\ArticleResponseSync" method="processArticles">
+            <schedule>*/5 * * * *</schedule>
+        </job>
     </group>
 </config>
