@@ -85,15 +85,13 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
          * - if duplicate, we do nothing as the attribute 'yc_sync_with_yellowcube' = 0
          */
 
-        if ($this->dataHelper->hasDataChangedFor($product, ['yc_sync_with_yellowcube'])) {
-            if ((bool)$product->getData('yc_sync_with_yellowcube')) {
-                $this->synchronizer->insert($product);
-                return;
-            } else {
-                $product->setData('yc_requires_lot_management', false);
-                $this->synchronizer->deactivate($product);
-                return;
-            }
+        if ((bool)$product->getData('yc_sync_with_yellowcube') && !(bool)$product->getOrigData('yc_sync_with_yellowcube')) {
+            $this->synchronizer->insert($product);
+            return;
+        } elseif (!(bool)$product->getData('yc_sync_with_yellowcube') && (bool)$product->getOrigData('yc_sync_with_yellowcube')) {
+            $product->setData('yc_requires_lot_management', false);
+            $this->synchronizer->deactivate($product);
+            return;
         }
 
         if (!(bool)$product->getData('yc_sync_with_yellowcube')) {

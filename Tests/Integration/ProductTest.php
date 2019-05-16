@@ -30,6 +30,11 @@ class ProductTest extends YellowCubeTestBase
     public function testEnablingSuccess()
     {
         $product = $this->productRepository->get('simple1');
+        $product->setData('yc_sync_with_yellowcube', '0');
+        $this->productRepository->save($product);
+        $this->assertCount(0, $this->queueModel->getMessages('yellowcube.sync'));
+
+        $product = $this->productRepository->get('simple1');
         $product->setData('yc_sync_with_yellowcube', true);
         $product->setData('yc_ean_type', 'HE');
         $product->setData('yc_ean_code', '135');
