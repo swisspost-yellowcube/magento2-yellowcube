@@ -4,6 +4,7 @@
         <resources>
             <resource id="Magento_Backend::admin">
                 <resource id="Swisspost_YellowCube::configure" title="Configure YellowCube"/>
+                <resource id="Swisspost_YellowCube::yellowcube_stock" title="YellowCube Stock Report"/>
             </resource>
         </resources>
     </acl>
