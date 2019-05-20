@@ -4,4 +4,17 @@
             <argument name="config" xsi:type="object">\Swisspost\YellowCube\Helper\Data</argument>
         </arguments>
     </type>
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="yellowcube_stock_listing_data_source" xsi:type="string">Swisspost\YellowCube\Model\ResourceModel\YellowCubeStock\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Swisspost\YellowCube\Model\ResourceModel\YellowCubeStock\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">yellowcube_stock</argument>
+            <argument name="resourceModel" xsi:type="string">Swisspost\YellowCube\Model\ResourceModel\YellowCubeStock</argument>
+        </arguments>
+    </type>
 </config>

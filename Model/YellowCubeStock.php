@@ -2,23 +2,16 @@
 
 namespace Swisspost\YellowCube\Model;
 
-class YellowCubeStock
+use Magento\Framework\Model\AbstractModel;
+
+class YellowCubeStock extends AbstractModel
 {
-    const TABLE_NAME = 'yellowcube_stock';
-
     /**
-     * @var \Magento\Framework\App\ResourceConnection
+     * @inheritDoc
      */
-    protected $resource;
-
-    /**
-     * YellowCubeShipmentItemRepository constructor.
-     *
-     * @param \Magento\Framework\App\ResourceConnection $resource
-     */
-    public function __construct(\Magento\Framework\App\ResourceConnection $resource)
+    protected function _construct()
     {
-        $this->resource = $resource;
+        $this->_init(ResourceModel\YellowCubeStock::class);
     }
 
     /**
@@ -29,10 +22,10 @@ class YellowCubeStock
      */
     public function updateStock(array $articles)
     {
-        $connection = $this->resource->getConnection();
+        $connection = $this->_resource->getConnection();
         $connection->beginTransaction();
 
-        $connection->delete(static::TABLE_NAME);
+        $connection->delete(ResourceModel\YellowCubeStock::TABLE_NAME);
 
         $data = [];
 
@@ -44,7 +37,7 @@ class YellowCubeStock
                 'best_before_date' => date('Y-m-d', strtotime($article->getBestBeforeDate())),
             ];
         }
-        $connection->insertMultiple(static::TABLE_NAME, $data);
+        $connection->insertMultiple(ResourceModel\YellowCubeStock::TABLE_NAME, $data);
         $connection->commit();
     }
 
@@ -56,8 +49,8 @@ class YellowCubeStock
      */
     public function getStock()
     {
-        $connection = $this->resource->getConnection();
-        $table_name = $this->resource->getTableName(static::TABLE_NAME);
+        $connection = $this->_resource->getConnection();
+        $table_name = $this->_resource->getTableName(ResourceModel\YellowCubeStock::TABLE_NAME);
 
         $result = $connection->query('SELECT * FROM ' . $table_name);
         $shipmentIds = [];
