@@ -80,7 +80,13 @@ class ArticleResponseSync
                 $this->productRepository->save($product);
 
             } catch (\Exception $e) {
-                $this->logger->error($e->getMessage());
+                $this->logger->error('YellowCube ART Exception: ' . $e->getMessage());
+                $product->setData('yc_response', $e->getMessage());
+                $product->setData('yc_sync_with_yellowcube', false);
+
+                $product->setData('yc_reference', null);
+                $this->productRepository->save($product);
+
             }
         }
     }
