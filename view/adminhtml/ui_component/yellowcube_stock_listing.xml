@@ -71,6 +71,18 @@
                 <filter>dateRange</filter>
                 <dataType>date</dataType>
                 <label translate="true">Best Before Date</label>
+                <dateFormat>dd-MM-Y</dateFormat>
+            </settings>
+        </column>
+        <!--
+            This is added as a separate column and not as an extension of the SKU column
+            because in that case it is very hard to implement filtering by SKU
+        -->
+        <column name="product_link" class="Swisspost\YellowCube\Ui\Component\Listing\Columns\ProductLink">
+            <settings>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                <dataType>text</dataType>
+                <label translate="true">Edit Product</label>
             </settings>
         </column>
     </columns>
