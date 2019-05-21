@@ -10,6 +10,7 @@
     <columns name="product_columns">
         <column name="yellowcube" class="\Swisspost\YellowCube\Ui\Component\Listing\Columns\YellowCube">
             <settings>
+                <bodyTmpl>Swisspost_YellowCube/ui/grid/cells/yellowcube</bodyTmpl>
                 <altField>name</altField>
                 <hasPreview>1</hasPreview>
                 <label translate="true">YellowCube</label>
