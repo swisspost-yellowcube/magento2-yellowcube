@@ -284,6 +284,41 @@ class ProductTest extends YellowCubeTestBase
      */
     public function testInventory()
     {
+
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->any())
+            ->method('isSuccess')
+            ->willReturn(true);
+        $response->expects($this->any())
+            ->method('getReference')
+            ->willReturn(23456);
+
+        $this->yellowCubeServiceMock->expects($this->any())
+            ->method('insertArticleMasterData')
+            ->willReturn($response);
+
+
+        $product = $this->_objectManager->create('Magento\Catalog\Model\Product');
+        $product
+            ->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE)
+            ->setAttributeSetId(4)
+            ->setWebsiteIds([1])
+            ->setName('Simple Product 3')
+            ->setSku('simple3')
+            ->setPrice(15)
+            ->setWeight(2)
+            ->setData('is_salable', 1)
+            ->setVisibility(\Magento\Catalog\Model\Product\Visibility::VISIBILITY_BOTH)
+            ->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED)
+            ->setData('ts_dimensions_length', 7)
+            ->setData('ts_dimensions_width', 3)
+            ->setData('ts_dimensions_height', 9)
+            ->setData('yc_sync_with_yellowcube', true)
+            ->save();
+
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+        $this->queueConsumer->process(1);
+
         $one_week = strtotime('1 week');
         $one_month = strtotime('1 month');
 
@@ -322,6 +357,7 @@ class ProductTest extends YellowCubeTestBase
 
         $this->assertStock('simple1', 36, 36);
         $this->assertStock('simple2', 9, 9);
+        $this->assertStock('simple3', 0, 0);
 
         // Assert the YellowCube stock.
         /** @var \Swisspost\YellowCube\Model\YellowCubeStock $yellowCubeStock */

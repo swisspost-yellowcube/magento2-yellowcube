@@ -66,6 +66,11 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
      */
     protected $yellowCubeStock;
 
+    /**
+     * @var \Magento\Framework\Api\SearchCriteriaBuilder
+     */
+    protected $searchCriteriaBuilder;
+
     public function __construct(
         \Psr\Log\LoggerInterface $logger,
         \Swisspost\YellowCube\Helper\Data $dataHelper,
@@ -79,7 +84,8 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory $sourceItemFactory,
         \Magento\Framework\Serialize\Serializer\Json $jsonSerializer,
         YellowCubeShipmentItemRepository $yellowCubeShipmentItemRepository,
-        \Swisspost\YellowCube\Model\YellowCubeStock $yellowCubeStock
+        \Swisspost\YellowCube\Model\YellowCubeStock $yellowCubeStock,
+        \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
         parent::__construct($logger, $dataHelper, $clientFactory);
         $this->catalogProductFactory = $catalogProductFactory;
@@ -92,6 +98,7 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         $this->jsonSerializer = $jsonSerializer;
         $this->yellowCubeShipmentItemRepository = $yellowCubeShipmentItemRepository;
         $this->yellowCubeStock = $yellowCubeStock;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
@@ -150,6 +157,16 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
             $this->update($articleNo, $articleData, $inventory->getTimestamp());
         }
 
+        // Ensure that the stock for all enabled products that are not in the response is 0.
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter('sku', array_keys($lotSummary), 'nin')
+            ->addFilter('yc_sync_with_yellowcube', 1)
+            ->create();
+        $missing_products = $this->productRepository->getList($searchCriteria);
+        foreach ($missing_products->getItems() as $missing_product) {
+            $this->updateProductQuantity($missing_product->getSku(), 0);
+        }
+
         $this->dataHelper->allowLockedAttributeChanges(false);
     }
 
@@ -204,16 +221,28 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
             $qtyToDecrease += $shipment_item->getQty();
         }
 
+        $quantity = $data['qty'] - $qtyToDecrease;
+        $this->updateProductQuantity($sku, $quantity);
+    }
+
+    /**
+     * Update product stock quantity.
+     *
+     * @param string $sku
+     * @param int $quantity
+     */
+    protected function updateProductQuantity($sku, int $quantity): void
+    {
         try {
             if ($this->dataHelper->getDebug()) {
-                $this->logger->info(__('Product %1 with the qty of %2 will be saved.', $sku, $data['qty']));
+                $this->logger->info(__('Product %1 with the qty of %2 will be saved.', $sku, $quantity));
             }
 
             /** @var SourceItemInterface $ourceItem */
             $ourceItem = $this->sourceItemFactory->create();
             $ourceItem->setStatus(SourceItemInterface::STATUS_IN_STOCK);
             $ourceItem->setSku($sku);
-            $ourceItem->setQuantity($data['qty'] - $qtyToDecrease);
+            $ourceItem->setQuantity($quantity);
             $ourceItem->setSourceCode('YellowCube');
             $this->sourceItemSave->execute([$ourceItem]);
         } catch (\Exception $e) {
