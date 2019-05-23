@@ -57,7 +57,7 @@ class ProductLink extends \Magento\Ui\Component\Listing\Columns\Column
                 try {
                     $product = $this->productRepository->get($item['sku']);
                     $link = $this->backendUrl->getUrl('catalog/product/edit', ['id' => $product->getId()]);
-                    $item[self::NAME] = sprintf('<a href="%s" target="_blank">%s</a>', $link, __('Edit'));
+                    $item[self::NAME] = sprintf('<a href="%s" target="_blank">%s</a>', $link, $product->getName());
                 } catch (NoSuchEntityException $e) {
                     // do nothing
                 }

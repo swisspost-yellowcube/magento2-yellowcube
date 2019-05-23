@@ -48,25 +48,31 @@
         <paging name="listing_paging"/>
     </listingToolbar>
     <columns name="yellowcube_stock_columns">
-        <column name="sku">
+        <column name="yc_article_no"  sortOrder="10">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">YellowCube Article No</label>
+            </settings>
+        </column>
+        <column name="sku"  sortOrder="20">
             <settings>
                 <filter>text</filter>
                 <label translate="true">SKU</label>
             </settings>
         </column>
-        <column name="lot">
+        <column name="lot" sortOrder="50">
             <settings>
                 <filter>text</filter>
                 <label translate="true">Lot</label>
             </settings>
         </column>
-        <column name="quantity">
+        <column name="quantity" sortOrder="40">
             <settings>
                 <filter>textRange</filter>
                 <label translate="true">Quantity</label>
             </settings>
         </column>
-        <column name="best_before_date" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+        <column name="best_before_date" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date" sortOrder="60">
             <settings>
                 <filter>dateRange</filter>
                 <dataType>date</dataType>
@@ -78,11 +84,11 @@
             This is added as a separate column and not as an extension of the SKU column
             because in that case it is very hard to implement filtering by SKU
         -->
-        <column name="product_link" class="Swisspost\YellowCube\Ui\Component\Listing\Columns\ProductLink">
+        <column name="product_link" sortOrder="30" class="Swisspost\YellowCube\Ui\Component\Listing\Columns\ProductLink">
             <settings>
                 <bodyTmpl>ui/grid/cells/html</bodyTmpl>
                 <dataType>text</dataType>
-                <label translate="true">Edit Product</label>
+                <label translate="true">Product</label>
             </settings>
         </column>
     </columns>

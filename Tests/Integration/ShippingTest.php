@@ -13,6 +13,7 @@ use Swisspost\YellowCube\Helper\Data;
 use Swisspost\YellowCube\Model\ShipmentStatusSync;
 use Swisspost\YellowCube\Model\Synchronizer;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
+use YellowCube\GEN_Response;
 use YellowCube\WAB\AdditionalService\AdditionalShippingServices;
 use YellowCube\WAB\AdditionalService\BasicShippingServices;
 use YellowCube\WAB\OrderHeader;
@@ -154,6 +155,18 @@ class ShippingTest extends YellowCubeTestBase
         $product->setData('yc_ean_type', 'HE');
         $product->setData('yc_ean_code', '135');
         $this->productRepository->save($product);
+
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->any())
+            ->method('isSuccess')
+            ->willReturn(true);
+        $response->expects($this->any())
+            ->method('getReference')
+            ->willReturn(23456);
+
+        $this->yellowCubeServiceMock->expects($this->any())
+            ->method('insertArticleMasterData')
+            ->willReturn($response);
 
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);

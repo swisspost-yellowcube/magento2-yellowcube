@@ -291,18 +291,21 @@ class ProductTest extends YellowCubeTestBase
         $article1
             ->setArticleNo('simple1')
             ->setLot('A')
+            ->setYCArticleNo('Y123456')
             ->setBestBeforeDate(date('YmdHi', $one_week))
             ->setQuantityUOM(new QuantityUOM(17));
 
         $article2 = new \YellowCube\BAR\Article();
         $article2
             ->setArticleNo('simple2')
+            ->setYCArticleNo('Y123457')
             ->setQuantityUOM(new QuantityUOM(9));
 
         $article11 = new \YellowCube\BAR\Article();
         $article11
             ->setArticleNo('simple1')
             ->setLot('B')
+            ->setYCArticleNo('Y123458')
             ->setBestBeforeDate(date('YmdHi', $one_month))
             ->setQuantityUOM(new QuantityUOM(19));
 
@@ -330,18 +333,21 @@ class ProductTest extends YellowCubeTestBase
                 'lot' => 'A',
                 'quantity' => '17',
                 'best_before_date' => date('Y-m-d', $one_week),
+                'yc_article_no' => 'Y123456'
             ],
             [
                 'sku' => 'simple2',
                 'lot' => null,
                 'quantity' => '9',
-                'best_before_date' => date('Y-m-d', 0),
+                'best_before_date' => null,
+                'yc_article_no' => 'Y123457'
             ],
             [
                 'sku' => 'simple1',
                 'lot' => 'B',
                 'quantity' => '19',
                 'best_before_date' => date('Y-m-d', $one_month),
+                'yc_article_no' => 'Y123458'
             ],
         ], $stock);
 

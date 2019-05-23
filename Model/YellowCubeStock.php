@@ -22,7 +22,7 @@ class YellowCubeStock extends AbstractModel
      */
     public function updateStock(array $articles)
     {
-        $connection = $this->_resource->getConnection();
+        $connection = $this->_getResource()->getConnection();
         $connection->beginTransaction();
 
         $connection->delete(ResourceModel\YellowCubeStock::TABLE_NAME);
@@ -34,7 +34,8 @@ class YellowCubeStock extends AbstractModel
                 'sku' => $article->getArticleNo(),
                 'quantity' => $article->getQuantityUOM()->get(),
                 'lot' => $article->getLot(),
-                'best_before_date' => date('Y-m-d', strtotime($article->getBestBeforeDate())),
+                'yc_article_no' => $article->getYCArticleNo(),
+                'best_before_date' => $article->getBestBeforeDate() ? date('Y-m-d', strtotime($article->getBestBeforeDate())) : null,
             ];
         }
         $connection->insertMultiple(ResourceModel\YellowCubeStock::TABLE_NAME, $data);
@@ -49,8 +50,8 @@ class YellowCubeStock extends AbstractModel
      */
     public function getStock()
     {
-        $connection = $this->_resource->getConnection();
-        $table_name = $this->_resource->getTableName(ResourceModel\YellowCubeStock::TABLE_NAME);
+        $connection = $this->_getResource()->getConnection();
+        $table_name = $this->_getResource()->getMainTable();
 
         $result = $connection->query('SELECT * FROM ' . $table_name);
         $shipmentIds = [];
