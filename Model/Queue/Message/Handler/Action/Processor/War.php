@@ -129,6 +129,7 @@ class War extends ProcessorAbstract implements ProcessorInterface
                     $shipment
                         ->addTrack($track)
                         ->addComment($message, true, true)
+                        ->setShipmentStatus(Carrier::STATUS_SHIPPED)
                         ->save();
 
                     // @todo Enable and test sending e-mail.

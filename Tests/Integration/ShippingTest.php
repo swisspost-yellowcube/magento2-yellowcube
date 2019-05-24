@@ -11,6 +11,7 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
 use Swisspost\YellowCube\Helper\Data;
 use Swisspost\YellowCube\Model\ShipmentStatusSync;
+use Swisspost\YellowCube\Model\Shipping\Carrier\Carrier;
 use Swisspost\YellowCube\Model\Synchronizer;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 use YellowCube\GEN_Response;
@@ -53,6 +54,9 @@ class ShippingTest extends YellowCubeTestBase
         /** @var ShipmentInterface $shipment */
         list($shipment, $shipmentItem) = $this->createOrderAndShip();
 
+        $shipment = $this->reloadShipment($shipment);
+        $this->assertEquals(Carrier::STATUS_SUBMITTED, $shipment->getShipmentStatus());
+
         $response = new \YellowCube\GEN_Response(date('YmdHi', strtotime('now')), 'test', 100, 'S', 'Status text', '9999');
         $this->yellowCubeServiceMock->expects($this->once())
             ->method('getYCCustomerOrderStatus')
@@ -68,6 +72,9 @@ class ShippingTest extends YellowCubeTestBase
         $this->assertCount(1, $shipments);
         $this->assertEquals($shipment->getId(), $shipments[$shipmentItem->getId()]['shipment_id']);
         $this->assertEquals(YellowCubeShipmentItemRepository::STATUS_CONFIRMED, $shipments[$shipmentItem->getId()]['status']);
+
+        $shipment = $this->reloadShipment($shipment);
+        $this->assertEquals(Carrier::STATUS_CONFIRMED, $shipment->getShipmentStatus());
 
         /** @var \Swisspost\YellowCube\Model\Synchronizer $synchronizer */
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
@@ -92,9 +99,9 @@ class ShippingTest extends YellowCubeTestBase
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
 
-        /** @var \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentRepository */
-        $shipmentRepository = $this->_objectManager->create(ShipmentRepositoryInterface::class);
-        $shipment = $shipmentRepository->get($shipment->getEntityId());
+        $shipment = $this->reloadShipment($shipment);
+        $this->assertEquals(Carrier::STATUS_SHIPPED, $shipment->getShipmentStatus());
+
         $tracks = $shipment->getTracks();
         $this->assertCount(1, $tracks);
         $track = reset($tracks);
@@ -112,6 +119,8 @@ class ShippingTest extends YellowCubeTestBase
         $synchronizer->war();
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
+
+        $this->assertStock('simple1', 0, 7);
     }
 
     /**
@@ -138,6 +147,11 @@ class ShippingTest extends YellowCubeTestBase
         $this->assertEquals($shipment->getId(), $shipments[$shipmentItem->getId()]['shipment_id']);
         $this->assertEquals(YellowCubeShipmentItemRepository::STATUS_ERROR, $shipments[$shipmentItem->getId()]['status']);
         $this->assertEquals('Product can not be shipped', $shipments[$shipmentItem->getId()]['message']);
+
+        $shipment = $this->reloadShipment($shipment);
+        $this->assertEquals(Carrier::STATUS_ERROR, $shipment->getShipmentStatus());
+
+        $this->assertStock('simple1', 0, 7);
     }
 
     /**
@@ -260,6 +274,9 @@ class ShippingTest extends YellowCubeTestBase
             ->with($wab_order)
             ->willReturn($response);
 
+        // @todo Workaround for https://github.com/magento-engcom/msi/issues/2276.
+        $shipment->setOrigData('entity_id', $shipment->getEntityId());
+
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
         $this->queueConsumer->process(1);
 
@@ -279,5 +296,17 @@ class ShippingTest extends YellowCubeTestBase
         $order->save();
 
         return [$shipment, $shipmentItem];
+    }
+
+    /**
+     * @param ShipmentInterface $shipment
+     * @return ShipmentInterface
+     */
+    protected function reloadShipment(ShipmentInterface $shipment): ShipmentInterface
+    {
+        /** @var \Magento\Sales\Api\ShipmentRepositoryInterface $shipmentRepository */
+        $shipmentRepository = $this->_objectManager->create(ShipmentRepositoryInterface::class);
+        $shipment = $shipmentRepository->get($shipment->getEntityId());
+        return $shipment;
     }
 }

@@ -4,6 +4,7 @@ namespace Swisspost\YellowCube\Model;
 
 use Magento\Sales\Api\Data\ShipmentInterface;
 use Swisspost\YellowCube\Helper\Data;
+use Swisspost\YellowCube\Model\Shipping\Carrier\Carrier;
 
 /**
  * Checks for confirmations about submitted shipments to YellowCube.
@@ -56,57 +57,22 @@ class ShipmentStatusSync
             $shipment = null;
             try {
                 $shipment = $this->shipmentRepository->get($shipmentId);
-                $this->process($shipment, $reference);
+                $response = $this->clientFactory->getService()->getYCCustomerOrderStatus($reference);
+                if ($response->isSuccess() && !$response->isPending()) {
+                    $this->yellowCubeShipmentItemRepository->updateByShipmentId($shipment->getEntityId(), YellowCubeShipmentItemRepository::STATUS_CONFIRMED);
+                    $shipment->addComment(__('YellowCube Success ' . $response->getStatusText()), false, false);
+                    $shipment->setShipmentStatus(Carrier::STATUS_CONFIRMED);
+                    $shipment->save();
+                }
             } catch (\Exception $e) {
                 if ($shipment) {
                     $shipment->addComment('YellowCube Error: ' . $e->getMessage(), false, false);
+                    $shipment->setShipmentStatus(Carrier::STATUS_ERROR);
                     $this->shipmentRepository->save($shipment);
                 }
                 $this->yellowCubeShipmentItemRepository->updateByShipmentId($shipmentId, YellowCubeShipmentItemRepository::STATUS_ERROR, $e->getMessage());
                 $this->logger->error($e->getMessage());
             }
         }
-    }
-
-    protected function process(ShipmentInterface $shipment, $reference)
-    {
-        $response = $this->clientFactory->getService()->getYCCustomerOrderStatus($reference);
-
-        $this->logger->info(print_r($response, true));
-
-        if (!is_object($response) || !$response->isSuccess()) {
-            $message = __(
-                'Shipment #%s Status for Order #%s with YellowCube Transaction ID could not received from YellowCube: "%s".',
-                $shipment->getIncrementId(),
-                $shipment->getOrderId(),
-                $reference,
-                $response->getStatusText()
-            );
-
-            $shipment
-                    ->addComment($message, false, false)
-                    ->save();
-
-            $this->logger->error($message . "\n" . print_r($response, true));
-        } else {
-            if ($response->isSuccess() && !$response->isPending() && !$response->isError()) {
-                $this->yellowCubeShipmentItemRepository->updateByShipmentId($shipment->getId(), YellowCubeShipmentItemRepository::STATUS_CONFIRMED);
-                $shipment
-                        ->addComment(__('YellowCube Success ' . $response->getStatusText()), false, false)
-                        ->save();
-            } else {
-                if ($response->isError()) {
-                    $shipment
-                            ->addComment(__('YellowCube Error: ' . $response->getStatusText()), false, false)
-                            ->save();
-                }
-            }
-
-            if ($this->dataHelper->getDebug()) {
-                $this->logger->debug(print_r($response, true));
-            }
-        }
-
-        return $this;
     }
 }

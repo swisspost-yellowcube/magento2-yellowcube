@@ -12,6 +12,7 @@
 namespace Swisspost\YellowCube\Model\Queue\Message\Handler\Action\Processor;
 
 use Swisspost\YellowCube\Helper\Data;
+use Swisspost\YellowCube\Model\Shipping\Carrier\Carrier;
 use Swisspost\YellowCube\Model\YellowCubeShipmentItemRepository;
 use YellowCube\WAB\AdditionalService\AdditionalShippingServices;
 use YellowCube\WAB\AdditionalService\BasicShippingServices;
@@ -121,6 +122,7 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
                 );
 
                 $shipment->addComment($message);
+                $shipment->setShipmentStatus(Carrier::STATUS_ERROR);
                 $this->shipmentRepository->save($shipment);
 
                 $this->logger->error($message . "\n" . print_r($response, true));
@@ -145,6 +147,7 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
                     $response->getReference(),
                     $response->getStatusText()
                 ), false, false);
+                $shipment->setShipmentStatus(Carrier::STATUS_SUBMITTED);
                 $this->shipmentRepository->save($shipment);
             }
         } catch (\Exception $e) {

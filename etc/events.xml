@@ -25,4 +25,8 @@
         <observer name="catalog_product_duplicate_yellowcube" instance="Swisspost\YellowCube\Observer\handleProductDuplicate"/>
     </event>
 
+    <event name="core_collection_abstract_load_before">
+        <observer name="yellowcube_add_shipment_grid_status_field" instance="Swisspost\YellowCube\Observer\ShipmentCollectionLoadObserver"/>
+    </event>
+
 </config>

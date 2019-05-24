@@ -63,7 +63,10 @@ class HandleShipmentSaveAfter implements \Magento\Framework\Event\ObserverInterf
     {
         /* @var $shipment Shipment */
         $shipment = $observer->getShipment();
-        if (strpos($shipment->getOrder()->getShippingMethod(), 'yellowcube_') === 0 && $shipment->getOrder()->getIsInProcess()) {
+
+        // Process this sihpment if it uses a yellowcube shipping method, the order is in progress and the shipment
+        // does not yet have a status.
+        if (strpos($shipment->getOrder()->getShippingMethod(), 'yellowcube_') === 0 && $shipment->getOrder()->getIsInProcess() && !$shipment->getShipmentStatus()) {
             /* @var $carrier \Magento\Shipping\Model\Carrier\AbstractCarrier */
             $carrier = $this->carrierFactory->createIfActive('yellowcube', $shipment->getStoreId());
             if ($carrier) {

@@ -9,6 +9,14 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
 {
     const CODE = 'yellowcube';
 
+    const STATUS_SUBMITTED = 46650001;
+
+    const STATUS_CONFIRMED = 46650002;
+
+    const STATUS_SHIPPED = 46650003;
+
+    const STATUS_ERROR = 46650099;
+
     /**
      * @var string
      */
@@ -146,5 +154,21 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
         $this->synchronizer->ship($request);
 
         return $this->dataObjectFactory->create();
+    }
+
+    /**
+     * Returns known shipment status options.
+     *
+     * @return array
+     */
+    public function getShipmentStatusOptions()
+    {
+        return [
+            static::STATUS_SUBMITTED => __('Submitted'),
+            static::STATUS_CONFIRMED => __('Confirmed'),
+            static::STATUS_SHIPPED => __('Shipped'),
+            static::STATUS_ERROR => __('Error'),
+        ];
+
     }
 }

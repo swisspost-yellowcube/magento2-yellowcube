@@ -194,7 +194,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * Get debug mode
      *
      * @param null|string|bool|int|\Magento\Store\Model\Store $storeId
-     * @return bool
+     *
+     * @return array
      */
     public function getAllowedMethods($storeId = \Magento\Store\Model\Store::ADMIN_CODE)
     {
