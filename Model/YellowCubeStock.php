@@ -33,7 +33,7 @@ class YellowCubeStock extends AbstractModel
             $data[] = [
                 'sku' => $article->getArticleNo(),
                 'quantity' => $article->getQuantityUOM()->get(),
-                'lot' => $article->getLot(),
+                'lot' => $article->getYCLot(),
                 'yc_article_no' => $article->getYCArticleNo(),
                 'best_before_date' => $article->getBestBeforeDate() ? date('Y-m-d', strtotime($article->getBestBeforeDate())) : null,
             ];
