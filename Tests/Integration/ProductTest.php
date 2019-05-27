@@ -325,7 +325,7 @@ class ProductTest extends YellowCubeTestBase
         $article1 = new \YellowCube\BAR\Article();
         $article1
             ->setArticleNo('simple1')
-            ->setYcLot('A')
+            ->setYcLot('0000001395')
             ->setYCArticleNo('Y123456')
             ->setBestBeforeDate(date('YmdHi', $one_week))
             ->setQuantityUOM(new QuantityUOM(17));
@@ -339,7 +339,7 @@ class ProductTest extends YellowCubeTestBase
         $article11 = new \YellowCube\BAR\Article();
         $article11
             ->setArticleNo('simple1')
-            ->setYcLot('B')
+            ->setYcLot('0000001396')
             ->setYCArticleNo('Y123458')
             ->setBestBeforeDate(date('YmdHi', $one_month))
             ->setQuantityUOM(new QuantityUOM(19));
@@ -366,7 +366,7 @@ class ProductTest extends YellowCubeTestBase
         $this->assertEquals([
             [
                 'sku' => 'simple1',
-                'lot' => 'A',
+                'lot' => '0000001395',
                 'quantity' => '17',
                 'best_before_date' => date('Y-m-d', $one_week),
                 'yc_article_no' => 'Y123456'
@@ -380,7 +380,7 @@ class ProductTest extends YellowCubeTestBase
             ],
             [
                 'sku' => 'simple1',
-                'lot' => 'B',
+                'lot' => '0000001396',
                 'quantity' => '19',
                 'best_before_date' => date('Y-m-d', $one_month),
                 'yc_article_no' => 'Y123458'
