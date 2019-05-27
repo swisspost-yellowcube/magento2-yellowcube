@@ -54,13 +54,18 @@ class YellowCube extends \Magento\Ui\Component\Listing\Columns\Column
                 $reference = $item['yc_reference'] ?? null;
                 $response = $item['yc_response'] ?? null;
 
-                $status = __('No');
+                $xml_position = strpos($response, 'Request XML');
+                if ($xml_position !== false) {
+                    $response = \substr($response, 0, $xml_position);
+                }
+
+                $status = __('Not connected');
                 $cssClass = '';
                 if ($sync) {
                     if ($reference) {
                         $status = __('Pending, Reference: %1', $reference);
                     } else {
-                        $status = __('Yes');
+                        $status = __('Synced');
                         $cssClass = 'yellowcube-success';
                     }
                 } elseif ($response) {

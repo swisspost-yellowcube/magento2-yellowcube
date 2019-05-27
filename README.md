@@ -53,7 +53,10 @@ composer update --lock
 In Menu `Stores > Configuration > Sales > Shipping Methods`. enable YellowCube and configure it based on the received
 information.
 
-In Menu `Stores > Stocks`, create a Stock that contains at least the automatically created YellowCube source. 
+In Menu `Stores > Stocks`, create a Stock that contains at least the automatically created YellowCube source.
+
+**Important**: After code changes and deployments, the message queue processor that magento automatically starts on
+cron must be restarted. 
 
 ### User Manual / Configuration Manual
 
