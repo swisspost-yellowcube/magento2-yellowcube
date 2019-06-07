@@ -13,6 +13,15 @@
                 </templates>
             </settings>
         </filters>
+        <massaction name="listing_massaction">
+            <action name="yellowcube_resend">
+                <settings>
+                    <url path="yellowcube/shipment/resend"/>
+                    <type>yellowcube_resend</type>
+                    <label translate="true">Resend to YellowCube</label>
+                </settings>
+            </action>
+        </massaction>
     </listingToolbar>
     <columns name="sales_order_shipment_columns">
         <column name="yellowcube_shipment_status" component="Magento_Ui/js/grid/columns/select">
