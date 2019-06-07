@@ -386,7 +386,7 @@ class ProductTest extends YellowCubeTestBase
         $article1 = new \YellowCube\BAR\Article();
         $article1
             ->setArticleNo('simple1')
-            ->setYcLot('A')
+            ->setLot('A')
             ->setYCArticleNo('Y123456')
             ->setBestBeforeDate(date('YmdHi', $one_week))
             ->setQuantityUOM(new QuantityUOM(17));
@@ -400,7 +400,7 @@ class ProductTest extends YellowCubeTestBase
         $article11 = new \YellowCube\BAR\Article();
         $article11
             ->setArticleNo('simple1')
-            ->setYcLot('B')
+            ->setLot('B')
             ->setYCArticleNo('Y123458')
             ->setBestBeforeDate(date('YmdHi', $one_month))
             ->setQuantityUOM(new QuantityUOM(19));

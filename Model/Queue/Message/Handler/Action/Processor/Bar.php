@@ -124,16 +124,17 @@ class Bar extends ProcessorAbstract implements ProcessorInterface
         /* @var $article \YellowCube\BAR\Article */
         foreach ($inventory->getArticles() as $article) {
             $articleNo = $article->getArticleNo();
-            $articleLot = $article->getYcLot();
+            $articleLot = $article->getLot();
 
-            if ($articleLot) {
+            //todo @psa make sure this gives NULL if empty
+            if (!is_null($article->getLot())) {
                 $lotSummary[$articleNo]['qty'] = $article->getQuantityUOM()->get();
                 $lotSummary[$articleNo]['lotInfo'] = 'Lot: ' . $articleLot . " Quantity: " . (int)$article->getQuantityUOM()->get() . ' ExpDate: ' . $this->convertYCDate($article->getBestBeforeDate()) . PHP_EOL;
                 $lotSummary[$articleNo]['recentExpDate'] = $article->getBestBeforeDate();
 
                 foreach ($inventory->getArticles() as $article2) {
                     $article2No = $article2->getArticleNo();
-                    $article2Lot = $article2->getYCLot();
+                    $article2Lot = $article2->getLot();
                     //only do this if its not the lot already iterating
                     if ($articleNo == $article2No && $articleLot != $article2Lot) {
                         $lotSummary[$articleNo]['qty'] = $lotSummary[$articleNo]['qty'] + $article2->getQuantityUOM()->get();
