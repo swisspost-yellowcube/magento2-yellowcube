@@ -1,9 +1,5 @@
 # Magento 2 integration module for YellowCube from Post AG - Switzerland
 
-## Description
-
-__NOTE__: This module is in early development and not yet functional.
-
 ## License
 
 This extension is licensed under OSL v.3.0
