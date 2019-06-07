@@ -67,8 +67,7 @@ class Resend extends \Magento\Backend\App\Action implements \Magento\Framework\A
                     $this->synchronizer->ship($request);
 
                     $shipment->setShipmentStatus(0);
-                    $shipment->
-
+                    $this->shipmentRepository->save($shipment);
 
                     $this->messageManager->addSuccessMessage(__('Shipment %1 has been resubmitted.', $shipment->getIncrementId()));
                 } else {
