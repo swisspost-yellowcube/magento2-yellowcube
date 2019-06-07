@@ -98,7 +98,7 @@ class HandleProductSaveBefore implements \Magento\Framework\Event\ObserverInterf
             return;
         }
 
-        $attributes = ['name', 'weight', 'ts_dimensions_length', 'ts_dimensions_width', 'ts_dimensions_height', 'ts_dimensions_uom', 'yc_ean_type', 'yc_ean_code'];
+        $attributes = ['name', 'weight', 'ts_dimensions_length', 'ts_dimensions_width', 'ts_dimensions_height', 'ts_dimensions_uom', 'yc_ean_type', 'yc_ean_code', 'yc_requires_lot_management'];
 
         if ($this->dataHelper->hasDataChangedFor($product, $attributes)) {
             $this->synchronizer->update($product);

@@ -282,6 +282,67 @@ class ProductTest extends YellowCubeTestBase
      * @magentoAppIsolation enabled
      * @magentoDataFixture loadFixture
      */
+    public function testEnablingChanges()
+    {
+        $product = $this->productRepository->get('simple1');
+        $product->setData('yc_sync_with_yellowcube', true);
+        $product->setData('yc_ean_type', 'HE');
+        $product->setData('yc_ean_code', '135');
+        $this->productRepository->save($product);
+
+
+        $response = $this->createMock(GEN_Response::class);
+        $response->expects($this->any())
+            ->method('isSuccess')
+            ->willReturn(true);
+        $response->expects($this->any())
+            ->method('getReference')
+            ->willReturn(23456);
+
+        $this->yellowCubeServiceMock->expects($this->exactly(3))
+            ->method('insertArticleMasterData')
+            ->willReturn($response);
+
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+        $this->queueConsumer->process(1);
+
+        $attributes = ['name', 'weight', 'ts_dimensions_length', 'ts_dimensions_width', 'ts_dimensions_height', 'ts_dimensions_uom', 'yc_ean_type', 'yc_ean_code'];
+
+        // Enable lot management.
+        $product = $this->productRepository->get('simple1');
+        $product->setData('yc_requires_lot_management', true);
+        $this->productRepository->save($product);
+
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+        $this->queueConsumer->process(1);
+
+        // Change name.
+        $product = $this->productRepository->get('simple1');
+        $product->setName('New product name');
+        $this->productRepository->save($product);
+
+        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+        $this->queueConsumer->process(1);
+
+        // No change.
+        $product = $this->productRepository->get('simple1');
+        $this->productRepository->save($product);
+
+        $this->assertCount(0, $this->queueModel->getMessages('yellowcube.sync'));
+
+        // Irrelevant change.
+        $product = $this->productRepository->get('simple1');
+        $product->setPrice(5);
+        $this->productRepository->save($product);
+
+        $this->assertCount(0, $this->queueModel->getMessages('yellowcube.sync'));
+    }
+
+    /**
+     * @magentoDbIsolation enabled
+     * @magentoAppIsolation enabled
+     * @magentoDataFixture loadFixture
+     */
     public function testInventory()
     {
 
