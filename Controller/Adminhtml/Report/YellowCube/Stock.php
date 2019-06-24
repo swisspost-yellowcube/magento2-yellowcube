@@ -4,7 +4,7 @@ namespace Swisspost\YellowCube\Controller\Adminhtml\Report\YellowCube;
 
 use Magento\Reports\Controller\Adminhtml\Report\AbstractReport;
 
-abstract class Stock extends AbstractReport
+class Stock extends AbstractReport
 {
     /**
      * YellowCube Stock report
