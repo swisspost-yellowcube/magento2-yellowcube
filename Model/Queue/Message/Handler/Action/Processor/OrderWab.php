@@ -88,7 +88,7 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
             // We use shipment increment id instead of order id for the shop owner User Experience even if the expected parameter should be an OrderID
             ->setOrderHeader(new OrderHeader(
                 $this->cutString($this->dataHelper->getDepositorNumber($shipment->getStoreId()), 10),
-                $this->cutString($order->getIncrementId()),
+                $this->cutString($shipment->getIncrementId()),
                 date('Ymd')
             ))
             ->setPartnerAddress($partner)
