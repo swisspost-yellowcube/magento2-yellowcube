@@ -108,11 +108,8 @@ class War extends ProcessorAbstract implements ProcessorInterface
 
                     $this->logger->debug(__('Items for shipment %s considered as shipped', $shipment->getIncrementId()));
 
-                    // shipping number contains a semicolon, post api supports multiple values
-                    $shippingUrl = 'http://www.post.ch/swisspost-tracking?formattedParcelCodes=' . $shipmentNo;
-
                     // Add a message to the order history incl. link to shipping infos
-                    $message = __('Your order has been shipped. You can use the following url for shipping tracking: <a href="%1" target="_blank">%1</a>', $shippingUrl);
+                    $message = __('Your order has been shipped, tracking #%1.', $shipmentNo);
                     if ($lotId) {
                         $message .= "\r\n" . __('Lot ID: %1', $lotId);
                     }
@@ -124,7 +121,7 @@ class War extends ProcessorAbstract implements ProcessorInterface
                     $track
                         ->setCarrierCode(Carrier::CODE)
                         ->setTitle(__('SwissPost Tracking Code'))
-                        ->setNumber($shippingUrl);
+                        ->setNumber($shipmentNo);
 
                     $shipment
                         ->addTrack($track)

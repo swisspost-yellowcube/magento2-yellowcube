@@ -2,7 +2,9 @@
 
 namespace Swisspost\YellowCube\Model\Shipping\Carrier;
 
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
+use Magento\Shipping\Model\Tracking\Result\StatusFactory;
 use Swisspost\YellowCube\Model\Synchronizer;
 
 class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements CarrierInterface
@@ -52,6 +54,11 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
      */
     protected $synchronizer;
 
+    /**
+     * @var \Magento\Shipping\Model\Tracking\Result\StatusFactory
+     */
+    protected $trackStatusFactory;
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory $rateErrorFactory,
@@ -61,6 +68,7 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
         \Magento\Framework\DataObjectFactory $dataObjectFactory,
         Synchronizer $synchronizer,
         \Swisspost\YellowCube\Helper\Data $dataHelper,
+        StatusFactory $trackStatusFactory,
         array $data = []
     ) {
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
@@ -69,6 +77,7 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
         $this->quoteQuoteAddressRateResultMethodFactory = $quoteQuoteAddressRateResultMethodFactory;
         $this->synchronizer = $synchronizer;
         $this->dataHelper = $dataHelper;
+        $this->trackStatusFactory = $trackStatusFactory;
     }
 
     /**
@@ -171,4 +180,29 @@ class Carrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements
         ];
 
     }
+
+    /**
+     * Get tracking information.
+     *
+     * @param string $trackingNumber
+     * @return \Magento\Shipping\Model\Tracking\Result\AbstractResult
+     *
+     * @see \Magento\Shipping\Model\Carrier\AbstractCarrier::isTrackingAvailable()
+     * @see \Magento\Shipping\Model\Carrier\AbstractCarrierOnline::getTrackingInfo()
+     */
+    public function getTrackingInfo($trackingNumber)
+    {
+        /** @var \Magento\Shipping\Model\Tracking\Result\Status $tracking */
+        $tracking = $this->trackStatusFactory->create();
+        $tracking->setCarrier($this->_code);
+        $tracking->setTracking($trackingNumber);
+        $tracking->setCarrierTitle($this->getConfigData('title'));
+
+        // shipping number contains a semicolon, post api supports multiple values
+        $trackingUrl = 'http://www.post.ch/swisspost-tracking?formattedParcelCodes=' . $trackingNumber;
+        $tracking->setUrl($trackingUrl);
+
+        return $tracking;
+    }
+
 }

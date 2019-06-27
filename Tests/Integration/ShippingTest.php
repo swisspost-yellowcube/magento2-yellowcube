@@ -9,6 +9,7 @@ use Magento\Sales\Api\Data\ShipmentInterface;
 use Magento\Sales\Api\ShipmentRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Shipment;
+use Magento\Shipping\Model\Order\TrackFactory;
 use Swisspost\YellowCube\Helper\Data;
 use Swisspost\YellowCube\Model\ShipmentStatusSync;
 use Swisspost\YellowCube\Model\Shipping\Carrier\Carrier;
@@ -105,7 +106,9 @@ class ShippingTest extends YellowCubeTestBase
         $tracks = $shipment->getTracks();
         $this->assertCount(1, $tracks);
         $track = reset($tracks);
-        $this->assertEquals('http://www.post.ch/swisspost-tracking?formattedParcelCodes=7777', $track->getNumber());
+        $this->assertEquals('7777', $track->getNumber());
+        $track_model = $this->_objectManager->get(TrackFactory::class)->create()->load($track->getEntityId());
+        $this->assertEquals('http://www.post.ch/swisspost-tracking?formattedParcelCodes=7777', $track_model->getNumberDetail()->getUrl());
 
         $comments = $shipment->getComments();
         $this->assertCount(3, $comments);
@@ -113,7 +116,7 @@ class ShippingTest extends YellowCubeTestBase
         list($sentComment, $confirmedComment, $shippedComment) = array_values($comments);
         $this->assertEquals('Shipment #' . $shipment->getIncrementId() . ' for Order #' . $shipment->getOrder()->getIncrementId() . ' was successfully transmitted to YellowCube. Received reference number 9999 and status message "Status text".', $sentComment->getComment());
         $this->assertEquals('YellowCube Success Status text', $confirmedComment->getComment());
-        $this->assertContains('Your order has been shipped. You can use the following url for shipping tracking: <a href="http://www.post.ch/swisspost-tracking?formattedParcelCodes=7777" target="_blank">http://www.post.ch/swisspost-tracking?formattedParcelCodes=7777</a>', $shippedComment->getComment());
+        $this->assertContains('Your order has been shipped, tracking #7777.', $shippedComment->getComment());
 
         // Call it again, but there are no confirmed shipments anymore, so the total count of calls remains 2.
         $synchronizer->war();

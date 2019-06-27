@@ -151,6 +151,10 @@ class OrderWab extends \Swisspost\YellowCube\Model\Queue\Message\Handler\Action\
                 $this->shipmentRepository->save($shipment);
             }
         } catch (\Exception $e) {
+            $shipment->addComment(__('Failed to submit to YellowCube due to error: %1', $e->getMessage()));
+            $shipment->setShipmentStatus(Carrier::STATUS_ERROR);
+            $this->shipmentRepository->save($shipment);
+
             // Let's keep going further processes
             $this->logger->critical($e);
         }
