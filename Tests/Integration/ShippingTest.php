@@ -229,7 +229,7 @@ class ShippingTest extends YellowCubeTestBase
         $shipmentRepository->save($shipment);
 
         $wab_order = new \YellowCube\WAB\Order();
-        $wab_order->setOrderHeader(new OrderHeader('54321', $order->getIncrementId(), date('Ymd')));
+        $wab_order->setOrderHeader(new OrderHeader('54321', $shipment->getIncrementId(), date('Ymd')));
         $partner = new Partner();
         $partner
             ->setPartnerType(Data::PARTNER_TYPE)

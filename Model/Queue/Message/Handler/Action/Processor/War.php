@@ -129,10 +129,7 @@ class War extends ProcessorAbstract implements ProcessorInterface
                         ->setShipmentStatus(Carrier::STATUS_SHIPPED)
                         ->save();
 
-                    // @todo Enable and test sending e-mail.
-                    $shipment->sendEmail(true, $message);
-
-                    $this->logger->debug(__('Shipment %s comment added and email sent', $shipment->getIncrementId()));
+                    $this->logger->debug(__('Shipment %s comment added.', $shipment->getIncrementId()));
                 }
             }
 
