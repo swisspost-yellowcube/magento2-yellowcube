@@ -59,7 +59,7 @@ class ShippingTest extends YellowCubeTestBase
         $this->assertEquals(Carrier::STATUS_SUBMITTED, $shipment->getShipmentStatus());
 
         $response = new \YellowCube\GEN_Response(date('YmdHi', strtotime('now')), 'test', 100, 'S', 'Status text', '9999');
-        $this->yellowCubeServiceMock->expects($this->once())
+        $this->yellowCubeServiceMock->expects($this->exactly(2))
             ->method('getYCCustomerOrderStatus')
             ->with('9999')
             ->willReturn($response);
@@ -77,10 +77,19 @@ class ShippingTest extends YellowCubeTestBase
         $shipment = $this->reloadShipment($shipment);
         $this->assertEquals(Carrier::STATUS_CONFIRMED, $shipment->getShipmentStatus());
 
+        // Create a second shipment.
+        /** @var ShipmentInterface $shipment */
+        list($shipment2, $shipmentItem2) = $this->createOrderAndShip(false);
+
+        $shipment2 = $this->reloadShipment($shipment2);
+        $shipmentStatusSync->processPendingShipments();
+        $this->assertEquals(Carrier::STATUS_CONFIRMED, $shipment2->getShipmentStatus());
+
         /** @var \Swisspost\YellowCube\Model\Synchronizer $synchronizer */
         $synchronizer = $this->_objectManager->get(Synchronizer::class);
 
-        // Check for shipping confirmation, first time nothing happened yet, on the second time, return data.
+        // Check for shipping confirmation, first time nothing happened yet, on the second time, return data for both
+        // shipments.
         $goodsInfo = new GoodsIssue();
         $goodsInfo->setCustomerOrderHeader(new CustomerOrderHeader(123, '', $shipment->getIncrementId(), null, 7777));
 
@@ -88,9 +97,16 @@ class ShippingTest extends YellowCubeTestBase
 
         $goodsInfo->setCustomerOrderList([$orderDetail]);
 
+        $goodsInfo2 = new GoodsIssue();
+        $goodsInfo2->setCustomerOrderHeader(new CustomerOrderHeader(124, '', $shipment2->getIncrementId(), null, 7778));
+
+        $orderDetail = new CustomerOrderDetail(null, null, null, 'simple1');
+
+        $goodsInfo2->setCustomerOrderList([$orderDetail]);
+
         $this->yellowCubeServiceMock->expects($this->exactly(2))
             ->method('getYCCustomerOrderReply')
-            ->willReturnOnConsecutiveCalls([], [$goodsInfo]);
+            ->willReturnOnConsecutiveCalls([], [$goodsInfo, $goodsInfo2]);
 
         $synchronizer->war();
         $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
@@ -103,12 +119,22 @@ class ShippingTest extends YellowCubeTestBase
         $shipment = $this->reloadShipment($shipment);
         $this->assertEquals(Carrier::STATUS_SHIPPED, $shipment->getShipmentStatus());
 
+        $shipment2 = $this->reloadShipment($shipment2);
+        $this->assertEquals(Carrier::STATUS_SHIPPED, $shipment2->getShipmentStatus());
+
         $tracks = $shipment->getTracks();
         $this->assertCount(1, $tracks);
         $track = reset($tracks);
         $this->assertEquals('7777', $track->getNumber());
         $track_model = $this->_objectManager->get(TrackFactory::class)->create()->load($track->getEntityId());
         $this->assertEquals('http://www.post.ch/swisspost-tracking?formattedParcelCodes=7777', $track_model->getNumberDetail()->getUrl());
+
+        $tracks = $shipment2->getTracks();
+        $this->assertCount(1, $tracks);
+        $track = reset($tracks);
+        $this->assertEquals('7778', $track->getNumber());
+        $track_model = $this->_objectManager->get(TrackFactory::class)->create()->load($track->getEntityId());
+        $this->assertEquals('http://www.post.ch/swisspost-tracking?formattedParcelCodes=7778', $track_model->getNumberDetail()->getUrl());
 
         $comments = $shipment->getComments();
         $this->assertCount(3, $comments);
@@ -158,6 +184,8 @@ class ShippingTest extends YellowCubeTestBase
     }
 
     /**
+     * @param bool $enable_product
+     *   whether to enable the product in YellowCube.
      * @return array
      * @throws \Magento\Framework\Exception\CouldNotSaveException
      * @throws \Magento\Framework\Exception\InputException
@@ -165,28 +193,30 @@ class ShippingTest extends YellowCubeTestBase
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\StateException
      */
-    protected function createOrderAndShip()
+    protected function createOrderAndShip($enable_product = true)
     {
         $product = $this->productRepository->get('simple1');
-        $product->setData('yc_sync_with_yellowcube', true);
-        $product->setData('yc_ean_type', 'HE');
-        $product->setData('yc_ean_code', '135');
-        $this->productRepository->save($product);
+        if ($enable_product) {
+            $product->setData('yc_sync_with_yellowcube', true);
+            $product->setData('yc_ean_type', 'HE');
+            $product->setData('yc_ean_code', '135');
+            $this->productRepository->save($product);
 
-        $response = $this->createMock(GEN_Response::class);
-        $response->expects($this->any())
-            ->method('isSuccess')
-            ->willReturn(true);
-        $response->expects($this->any())
-            ->method('getReference')
-            ->willReturn(23456);
+            $response = $this->createMock(GEN_Response::class);
+            $response->expects($this->any())
+                ->method('isSuccess')
+                ->willReturn(true);
+            $response->expects($this->any())
+                ->method('getReference')
+                ->willReturn(23456);
 
-        $this->yellowCubeServiceMock->expects($this->any())
-            ->method('insertArticleMasterData')
-            ->willReturn($response);
+            $this->yellowCubeServiceMock->expects($this->any())
+                ->method('insertArticleMasterData')
+                ->willReturn($response);
 
-        $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
-        $this->queueConsumer->process(1);
+            $this->assertCount(1, $this->queueModel->getMessages('yellowcube.sync'));
+            $this->queueConsumer->process(1);
+        }
 
         /** @var SourceItemInterface $sourceItem */
         $sourceItem = $this->_objectManager->create(SourceItemInterface::class);
@@ -213,10 +243,10 @@ class ShippingTest extends YellowCubeTestBase
         /** @var \Magento\Sales\Model\Order\ShipmentRepository $shipmentRepository */
         $shipmentRepository = $this->_objectManager->get(Order\ShipmentRepository::class);
         /** @var \Magento\Sales\Model\Order\Shipment $shipment */
-        $shipment = $this->_objectManager->get(Shipment::class);
+        $shipment = $this->_objectManager->create(Shipment::class);
 
         /** @var \Magento\Sales\Model\Order\Shipment\Item $shipmentItem */
-        $shipmentItem = $this->_objectManager->get(\Magento\Sales\Model\Order\Shipment\Item::class);
+        $shipmentItem = $this->_objectManager->create(\Magento\Sales\Model\Order\Shipment\Item::class);
         $shipmentItem->setProductId($product->getId());
         $shipmentItem->setQty(3);
         $shipmentItem->setSku($product->getSku());
@@ -272,7 +302,7 @@ class ShippingTest extends YellowCubeTestBase
             '9999'
         );
 
-        $this->yellowCubeServiceMock->expects($this->once())
+        $this->yellowCubeServiceMock->expects($this->atLeastOnce())
             ->method('createYCCustomerOrder')
             ->with($wab_order)
             ->willReturn($response);
