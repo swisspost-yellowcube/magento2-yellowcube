@@ -54,6 +54,7 @@ class War extends ProcessorAbstract implements ProcessorInterface
         $this->yellowCubeShipmentItemRepository = $yellowCubeShipmentItemRepository;
         $this->shipmentTrackRepository = $shipmentTrackRepository;
     }
+
     /**
      * @param array $data
      */
@@ -68,24 +69,24 @@ class War extends ProcessorAbstract implements ProcessorInterface
             $goodsIssueList = $this->getYellowCubeService()->getYCCustomerOrderReply();
 
             foreach ($goodsIssueList as $goodsIssue) {
-                $header = $goodsIssue->getCustomerOrderHeader();
+                try {
+                    $header = $goodsIssue->getCustomerOrderHeader();
 
-                $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', $header->getCustomerOrderNo())->create();
-                $shipmentList = $this->shipmentRepository->getList($searchCriteria)->getItems();
-                $shipmentNo = $header->getPostalShipmentNo();
+                    $searchCriteria = $this->searchCriteriaBuilder->addFilter('increment_id', $header->getCustomerOrderNo())->create();
+                    $shipmentList = $this->shipmentRepository->getList($searchCriteria)->getItems();
+                    $shipmentNo = $header->getPostalShipmentNo();
 
-                // Multi packaging / shipping is not supported atm.
-                if (!empty($shipmentNo) && $shipment = reset($shipmentList)) {
-                    /**
-                     * Define yc_shipped to 1 to be used later in BAR process that the shipping has been done
-                     */
-                    $customerOrderDetails = $goodsIssue->getCustomerOrderList();
-                    $shipmentItems = $shipment->getItemsCollection();
-                    $hash = [];
+                    // Multi packaging / shipping is not supported atm.
+                    if (!empty($shipmentNo) && $shipment = reset($shipmentList)) {
+                        /**
+                         * Define yc_shipped to 1 to be used later in BAR process that the shipping has been done
+                         */
+                        $customerOrderDetails = $goodsIssue->getCustomerOrderList();
+                        $shipmentItems = $shipment->getItemsCollection();
+                        $hash = [];
 
-                    $lotId = null;
-                    $quantityUOM = null;
-                    try {
+                        $lotId = null;
+                        $quantityUOM = null;
                         foreach ($customerOrderDetails as $customerOrderDetail) {
                             $this->logger->debug('Debug $customerOrderDetail ' . print_r($customerOrderDetail, true));
 
@@ -102,34 +103,41 @@ class War extends ProcessorAbstract implements ProcessorInterface
                             $lotId = $customerOrderDetail->getLot();
                             $quantityUOM = $customerOrderDetail->getQuantityUOM();
                         }
-                    } catch (\Exception $e) {
-                        $this->logger->critical($e);
+
+                        $this->logger->debug(__('Items for shipment %s considered as shipped', $shipment->getIncrementId()));
+
+                        // Add a message to the order history incl. link to shipping infos
+                        $message = __('Your order has been shipped, tracking URL: http://www.post.ch/swisspost-tracking?formattedParcelCodes=%1.', $shipmentNo);
+                        if ($lotId) {
+                            $message .= "\r\n" . __('Lot ID: %1', $lotId);
+                        }
+                        if ($quantityUOM) {
+                            $message .= "\r\n" . __('Quantity UOM: %1', $quantityUOM);
+                        }
+
+                        $track = $this->shipmentTrackFactory->create();
+                        $track
+                            ->setCarrierCode(Carrier::CODE)
+                            ->setTitle(__('SwissPost Tracking Code'))
+                            ->setNumber($shipmentNo);
+
+                        $shipment
+                            ->addTrack($track)
+                            ->addComment($message, true, true)
+                            ->setShipmentStatus(Carrier::STATUS_SHIPPED)
+                            ->save();
+
+                        $this->logger->debug(__('Shipment %s comment added.', $shipment->getIncrementId()));
                     }
-
-                    $this->logger->debug(__('Items for shipment %s considered as shipped', $shipment->getIncrementId()));
-
-                    // Add a message to the order history incl. link to shipping infos
-                    $message = __('Your order has been shipped, tracking #%1.', $shipmentNo);
-                    if ($lotId) {
-                        $message .= "\r\n" . __('Lot ID: %1', $lotId);
+                } catch (\Exception $e) {
+                    if (!empty($shipment)) {
+                        $shipment
+                            ->addComment(__('Failed to process WAR response: %1', $e->getMessage()), false, false)
+                            ->setShipmentStatus(Carrier::STATUS_ERROR)
+                            ->save();
                     }
-                    if ($quantityUOM) {
-                        $message .= "\r\n" . __('Quantity UOM: %1', $quantityUOM);
-                    }
-
-                    $track = $this->shipmentTrackFactory->create();
-                    $track
-                        ->setCarrierCode(Carrier::CODE)
-                        ->setTitle(__('SwissPost Tracking Code'))
-                        ->setNumber($shipmentNo);
-
-                    $shipment
-                        ->addTrack($track)
-                        ->addComment($message, true, true)
-                        ->setShipmentStatus(Carrier::STATUS_SHIPPED)
-                        ->save();
-
-                    $this->logger->debug(__('Shipment %s comment added.', $shipment->getIncrementId()));
+                    $this->logger->critical($e->getMessage());
+                    continue;
                 }
             }
 
@@ -138,7 +146,7 @@ class War extends ProcessorAbstract implements ProcessorInterface
             }
         } catch (\Exception $e) {
             // Let's keep going further processes
-            $this->logger->critical($e);
+            $this->logger->critical($e->getMessage());
         }
 
         return;
